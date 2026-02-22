@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Running Coaching — anarkid.xyz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root { --mint: #85FFBE; --pink: #E72696; --orange: #F99B1D; --yellow: #FACF31; --black: #111111; --white: #ffffff; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--white); color: var(--black); font-family: 'Barlow', sans-serif; font-size: 1.1rem; min-height: 100vh; }
+    header { background: var(--black); padding: 2.5rem 2rem 1.5rem; }
+    header::after { content: ''; display: block; height: 6px; background: linear-gradient(90deg, var(--mint), var(--pink), var(--orange), var(--yellow)); }
+    .site-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: clamp(3rem, 8vw, 6rem); color: var(--white); letter-spacing: -1px; line-height: 1; text-transform: lowercase; }
+    .site-title a { text-decoration: none; color: inherit; }
+    .site-title span { color: var(--pink); }
+    nav { background: var(--black); padding: 0 2rem; display: flex; gap: 0; flex-wrap: wrap; }
+    nav a { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--white); text-decoration: none; padding: 1rem 1.5rem; position: relative; transition: color 0.2s; }
+    nav a::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: var(--pink); transform: scaleX(0); transition: transform 0.2s; }
+    nav a:hover { color: var(--yellow); }
+    nav a:hover::after { transform: scaleX(1); }
+    nav a.active { color: var(--orange); }
+    nav a.active::after { transform: scaleX(1); background: var(--orange); }
+
+    .page-header { padding: 4rem 2rem 2rem; border-bottom: 3px solid var(--black); max-width: 860px; }
+    .page-label { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 3px; color: var(--orange); background: var(--black); display: inline-block; padding: 0.3rem 0.8rem; margin-bottom: 1rem; }
+    .page-header h1 { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: clamp(2.5rem, 6vw, 4rem); line-height: 1.05; }
+
+    .content { padding: 3rem 2rem 5rem; max-width: 720px; }
+    .placeholder-block { border-left: 6px solid var(--orange); padding: 1.5rem 2rem; background: #f9f9f9; margin-bottom: 2rem; }
+    .placeholder-block p { color: #888; font-style: italic; line-height: 1.7; }
+    .placeholder-block strong { display: block; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--black); margin-bottom: 0.5rem; font-style: normal; }
+
+    footer { background: var(--black); color: #888; text-align: center; padding: 2rem; font-size: 0.85rem; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1px; text-transform: uppercase; }
+    footer span { color: var(--pink); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="site-title"><a href="index.html">anarkid<span>.xyz</span></a></div>
+  </header>
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="about.html">About Me</a>
+    <a href="running-coaching.html" class="active">Running Coaching</a>
+    <a href="irl-creations.html">IRL Creations</a>
+    <a href="projects.html">Projects</a>
+  </nav>
+
+  <main>
+    <div class="page-header">
+      <div class="page-label">Running Coaching</div>
+      <h1>Running &amp; Coaching</h1>
+    </div>
+
+    <div class="content">
+      <div class="placeholder-block">
+        <strong>My running story</strong>
+        <p>How did you get into running? When did it become a serious part of your life? Add your story here.</p>
+      </div>
+      <div class="placeholder-block">
+        <strong>My coaching approach</strong>
+        <p>What's your philosophy when it comes to coaching? What do you focus on? Who do you coach?</p>
+      </div>
+      <div class="placeholder-block">
+        <strong>Get in touch</strong>
+        <p>If you offer coaching services, this is a good place to add contact details or a link to how people can reach you.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <span>anarkid.xyz</span> &mdash; built from scratch
+  </footer>
+
+</body>
+</html>

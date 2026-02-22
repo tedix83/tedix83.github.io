@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>anarkid.xyz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --mint:   #85FFBE;
+      --pink:   #E72696;
+      --orange: #F99B1D;
+      --yellow: #FACF31;
+      --black:  #111111;
+      --white:  #ffffff;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--white);
+      color: var(--black);
+      font-family: 'Barlow', sans-serif;
+      font-size: 1.1rem;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--black);
+      padding: 2.5rem 2rem 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::after {
+      content: '';
+      display: block;
+      height: 6px;
+      background: linear-gradient(90deg, var(--mint), var(--pink), var(--orange), var(--yellow));
+    }
+
+    .site-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: clamp(3rem, 8vw, 6rem);
+      color: var(--white);
+      letter-spacing: -1px;
+      line-height: 1;
+      text-transform: lowercase;
+    }
+
+    .site-title span {
+      color: var(--pink);
+    }
+
+    /* ── NAV ── */
+    nav {
+      background: var(--black);
+      padding: 0 2rem;
+      display: flex;
+      gap: 0;
+      flex-wrap: wrap;
+    }
+
+    nav a {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--white);
+      text-decoration: none;
+      padding: 1rem 1.5rem;
+      position: relative;
+      transition: color 0.2s;
+    }
+
+    nav a::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 4px;
+      background: var(--pink);
+      transform: scaleX(0);
+      transition: transform 0.2s;
+    }
+
+    nav a:hover { color: var(--yellow); }
+    nav a:hover::after { transform: scaleX(1); }
+    nav a.active { color: var(--mint); }
+    nav a.active::after { transform: scaleX(1); background: var(--mint); }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 5rem 2rem 4rem;
+      max-width: 860px;
+    }
+
+    .hero-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--pink);
+      margin-bottom: 1rem;
+    }
+
+    .hero h1 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      line-height: 1.05;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--pink);
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      line-height: 1.7;
+      color: #444;
+      max-width: 600px;
+    }
+
+    /* ── CARDS ── */
+    .cards-section {
+      padding: 3rem 2rem 5rem;
+    }
+
+    .cards-section h2 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 1.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .cards-section h2::after {
+      content: '';
+      flex: 1;
+      height: 3px;
+      background: var(--yellow);
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      border: 3px solid var(--black);
+      padding: 2rem 1.5rem;
+      text-decoration: none;
+      color: var(--black);
+      display: block;
+      position: relative;
+      transition: transform 0.15s, box-shadow 0.15s;
+      background: var(--white);
+    }
+
+    .card:hover {
+      transform: translate(-4px, -4px);
+      box-shadow: 6px 6px 0 var(--black);
+    }
+
+    .card-accent {
+      width: 40px;
+      height: 6px;
+      margin-bottom: 1.2rem;
+    }
+
+    .card h3 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 1.4rem;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .card p {
+      font-size: 0.95rem;
+      color: #555;
+      line-height: 1.5;
+    }
+
+    .card--mint  .card-accent { background: var(--mint); }
+    .card--pink  .card-accent { background: var(--pink); }
+    .card--orange .card-accent { background: var(--orange); }
+    .card--yellow .card-accent { background: var(--yellow); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--black);
+      color: #888;
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.85rem;
+      font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    footer span { color: var(--pink); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="site-title">anarkid<span>.xyz</span></div>
+  </header>
+
+  <nav>
+    <a href="index.html" class="active">Home</a>
+    <a href="about.html">About Me</a>
+    <a href="running-coaching.html">Running Coaching</a>
+    <a href="irl-creations.html">IRL Creations</a>
+    <a href="projects.html">Projects</a>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <p class="hero-label">Welcome</p>
+      <h1>Ted Spilsbury.</h1>
+      <p>I'm a qualified librarian currently working in Research Culture at a UK university. This is my corner of the internet — a place to share personal projects, professional interests, and tools I've built.</p>
+    </section>
+
+    <section class="cards-section">
+      <h2>Explore</h2>
+      <div class="cards">
+        <a class="card card--mint" href="about.html">
+          <div class="card-accent"></div>
+          <h3>About Me</h3>
+          <p>Who I am, what I do, and what keeps me going.</p>
+        </a>
+        <a class="card card--pink" href="running-coaching.html">
+          <div class="card-accent"></div>
+          <h3>Running Coaching</h3>
+          <p>My approach to running and coaching others.</p>
+        </a>
+        <a class="card card--orange" href="irl-creations.html">
+          <div class="card-accent"></div>
+          <h3>IRL Creations</h3>
+          <p>Things I've made in the physical world.</p>
+        </a>
+        <a class="card card--yellow" href="projects.html">
+          <div class="card-accent"></div>
+          <h3>Projects</h3>
+          <p>Digital tools and experiments I've built.</p>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>anarkid.xyz</span> &mdash; built from scratch
+  </footer>
+
+</body>
+</html>
