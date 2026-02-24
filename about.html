@@ -18,16 +18,94 @@
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--white); color: var(--black); font-family: 'Barlow', sans-serif; font-size: 1.1rem; min-height: 100vh; }
-    header { background: var(--black); padding: 2.5rem 2rem 1.5rem; }
+    header { background: var(--black); padding: 2.5rem 2rem 1.5rem; position: relative; }
     header::after { content: ''; display: block; height: 6px; background: linear-gradient(90deg, var(--mint), var(--pink), var(--orange), var(--yellow)); }
     .site-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: clamp(3rem, 8vw, 6rem); color: var(--white); letter-spacing: -1px; line-height: 1; text-transform: lowercase; }
     .site-title a { text-decoration: none; color: inherit; }
     .site-title span { color: var(--pink); }
-    nav { background: var(--black); padding: 0 2rem; display: flex; gap: 0; flex-wrap: wrap; }
-    nav a { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--white); text-decoration: none; padding: 1rem 1.5rem; position: relative; transition: color 0.2s; }
-    nav a::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: var(--pink); transform: scaleX(0); transition: transform 0.2s; }
+    /* ── NAV ── */
+    nav {
+      background: var(--black);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      position: relative;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    nav a {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--white);
+      text-decoration: none;
+      padding: 1rem 1.5rem;
+      position: relative;
+      transition: color 0.2s;
+      display: block;
+    }
+
+    nav a::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 4px;
+      background: var(--pink);
+      transform: scaleX(0);
+      transition: transform 0.2s;
+    }
+
     nav a:hover { color: var(--yellow); }
     nav a:hover::after { transform: scaleX(1); }
+
+    .hamburger {
+      display: none;
+      position: absolute;
+      top: 50%;
+      right: 2rem;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      flex-direction: column;
+      gap: 5px;
+      z-index: 100;
+    }
+
+    .hamburger span {
+      display: block;
+      width: 26px;
+      height: 3px;
+      background: var(--white);
+      transition: all 0.2s;
+    }
+
+
+
+    .hamburger.open span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+    @media (max-width: 600px) {
+      .hamburger { display: flex; }
+      .nav-links {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        padding-bottom: 0.5rem;
+      }
+      .nav-links.open { display: flex; }
+      nav a { padding: 0.8rem 0; border-bottom: 1px solid #222; }
+      nav a::after { display: none; }
+    }
     nav a.active { color: var(--mint); }
     nav a.active::after { transform: scaleX(1); background: var(--mint); }
 
@@ -110,16 +188,28 @@
 <body>
 
   <header>
+    <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
     <div class="site-title"><a href="index.html">anarkid<span>.xyz</span></a></div>
   </header>
 
   <nav>
+    <div class="nav-links" id="nav-links">
     <a href="index.html">Home</a>
     <a href="about.html" class="active">About Me</a>
     <a href="running-coaching.html">Running Coaching</a>
     <a href="irl-creations.html">IRL Creations</a>
     <a href="projects.html">Projects</a>
+    </div>
   </nav>
+
+  <script>
+    const btn = document.getElementById('hamburger');
+    const menu = document.getElementById('nav-links');
+    btn.addEventListener('click', () => {
+      btn.classList.toggle('open');
+      menu.classList.toggle('open');
+    });
+  </script>
 
   <main>
     <div class="page-header">
