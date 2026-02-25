@@ -434,16 +434,32 @@
   // ─────────────────────────────────────────────────────────────
   // PRICE FETCHING
   // ─────────────────────────────────────────────────────────────
-  const PROXY = 'https://corsproxy.io/?';
+  // Multiple proxies tried in order — if one is blocked, falls back to the next
+  const PROXIES = [
+    url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    url => `https://proxy.cors.sh/${url}`,
+  ];
 
   async function yFetch(ticker, period1, period2, interval) {
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?period1=${period1}&period2=${period2}&interval=${interval}`;
-    const res = await fetch(PROXY + encodeURIComponent(url));
-    if (!res.ok) throw new Error(`HTTP ${res.status} for ${ticker}`);
-    const json = await res.json();
-    const chart = json?.chart?.result?.[0];
-    if (!chart) throw new Error(`No data for ${ticker}`);
-    return chart;
+    let lastErr;
+    for (const makeProxy of PROXIES) {
+      try {
+        const res = await fetch(makeProxy(url));
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        // allorigins wraps the response in a .contents string
+        const parsed = typeof json.contents === 'string' ? JSON.parse(json.contents) : json;
+        const chart = parsed?.chart?.result?.[0];
+        if (!chart) throw new Error(`No data for ${ticker}`);
+        return chart;
+      } catch(e) {
+        lastErr = e;
+        // Try next proxy
+      }
+    }
+    throw new Error(`All proxies failed for ${ticker}: ${lastErr.message}`);
   }
 
   // Get price on a specific date (nearest trading day)
