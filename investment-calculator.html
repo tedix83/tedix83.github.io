@@ -109,7 +109,8 @@
     /* ── STATUS ── */
     .status-msg { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; padding: 0.8rem 1.2rem; border: 2px solid var(--black); margin-bottom: 1.5rem; display: none; }
     .status-msg.loading { background: #f5f5f5; color: #555; display: block; }
-    .status-msg.error { background: #fff0f5; color: var(--pink); border-color: var(--pink); display: block; }
+    .status-msg.waking  { background: #fffbe6; color: #7a5c00; border-color: var(--yellow); display: block; }
+    .status-msg.error   { background: #fff0f5; color: var(--pink); border-color: var(--pink); display: block; }
 
     /* ── RESULTS ── */
     #results { display: none; }
@@ -455,15 +456,34 @@
   // API server URL — update this once your Render service is deployed
   const API = 'https://investment-api-tvkb.onrender.com';
 
-  async function yFetch(ticker, period1, period2, interval) {
+  async function yFetch(ticker, period1, period2, interval, timeoutMs = 8000) {
     const url = `${API}/price?ticker=${encodeURIComponent(ticker)}&period1=${period1}&period2=${period2}&interval=${interval}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status} for ${ticker}`);
-    const json = await res.json();
-    if (json.error) throw new Error(json.error);
-    const chart = json?.chart?.result?.[0];
-    if (!chart) throw new Error(`No data for ${ticker}`);
-    return chart;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timer);
+      if (!res.ok) throw new Error(`HTTP ${res.status} for ${ticker}`);
+      const json = await res.json();
+      if (json.error) throw new Error(json.error);
+      const chart = json?.chart?.result?.[0];
+      if (!chart) throw new Error(`No data for ${ticker}`);
+      return chart;
+    } catch(err) {
+      clearTimeout(timer);
+      throw err;
+    }
+  }
+
+  async function yFetchWithWakeup(ticker, period1, period2, interval) {
+    try {
+      return await yFetch(ticker, period1, period2, interval, 8000);
+    } catch(firstErr) {
+      // Likely a cold-start timeout — warn the user and retry with a longer window
+      setStatus('waking', '\u23F3 Server is waking up — this takes about 30 seconds on first use of the day. Retrying automatically, please wait\u2026');
+      await new Promise(r => setTimeout(r, 32000));
+      return await yFetch(ticker, period1, period2, interval, 30000);
+    }
   }
 
   // Get price on a specific date (nearest trading day)
@@ -471,7 +491,7 @@
     const target = new Date(dateStr);
     const p1 = Math.floor((target.getTime() - 4*86400000) / 1000);
     const p2 = Math.floor((target.getTime() + 2*86400000) / 1000);
-    const chart = await yFetch(ticker, p1, p2, '1d');
+    const chart = await yFetchWithWakeup(ticker, p1, p2, '1d');
     const ts = chart.timestamp, cl = chart.indicators.quote[0].close;
     const tgt = target.getTime() / 1000;
     let best = null, diff = Infinity;
@@ -489,7 +509,7 @@
   async function fetchMonthlyHistory(ticker, startDateStr) {
     const start = Math.floor(new Date(startDateStr).getTime() / 1000);
     const end   = Math.floor(Date.now() / 1000);
-    const chart = await yFetch(ticker, start, end, '1mo');
+    const chart = await yFetchWithWakeup(ticker, start, end, '1mo');
     const ts = chart.timestamp;
     const cl = chart.indicators.quote[0].close;
     const result = [];
@@ -564,7 +584,7 @@
       clearStatus();
 
     } catch(err) {
-      showError(`Could not fetch price data: ${err.message}. Please try again in a moment.`);
+      showError(`Could not load data — the server may be unavailable. Please try again in a moment.`);
     } finally {
       document.getElementById('calculate-btn').disabled = false;
     }
