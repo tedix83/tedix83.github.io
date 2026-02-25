@@ -477,7 +477,7 @@
 
   async function yFetchWithWakeup(ticker, period1, period2, interval) {
     try {
-      return await yFetch(ticker, period1, period2, interval, 8000);
+      return await yFetch(ticker, period1, period2, interval, 25000);
     } catch(firstErr) {
       // Likely a cold-start timeout — warn the user and retry with a longer window
       setStatus('waking', '\u23F3 Server is waking up — this takes about 30 seconds on first use of the day. Retrying automatically, please wait\u2026');
