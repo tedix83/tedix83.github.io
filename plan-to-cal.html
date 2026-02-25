@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Training Plan to Calendar — anarkid.xyz</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --mint:   #85FFBE;
+      --pink:   #E72696;
+      --orange: #F99B1D;
+      --yellow: #FACF31;
+      --black:  #111111;
+      --white:  #ffffff;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--white); color: var(--black); font-family: 'Barlow', sans-serif; font-size: 1.1rem; min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── HEADER ── */
+    header { background: var(--black); padding: 2.5rem 2rem 1.5rem; position: relative; }
+    header::after { content: ''; display: block; height: 6px; background: linear-gradient(90deg, var(--mint), var(--pink), var(--orange), var(--yellow)); }
+    .site-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: clamp(3rem, 8vw, 6rem); color: var(--white); letter-spacing: -1px; line-height: 1; text-transform: lowercase; }
+    .site-title a { text-decoration: none; color: inherit; }
+    .site-title span { color: var(--pink); }
+
+    /* ── NAV ── */
+    nav { background: var(--black); padding: 0 2rem; display: flex; align-items: center; flex-wrap: wrap; position: relative; }
+    .nav-links { display: flex; flex-wrap: wrap; }
+    nav a { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--white); text-decoration: none; padding: 1rem 1.5rem; position: relative; transition: color 0.2s; display: block; }
+    nav a::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: var(--pink); transform: scaleX(0); transition: transform 0.2s; }
+    nav a:hover { color: var(--yellow); }
+    nav a:hover::after { transform: scaleX(1); }
+    .hamburger { display: none; position: absolute; top: 50%; right: 2rem; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 0; flex-direction: column; gap: 5px; z-index: 100; }
+    .hamburger span { display: block; width: 26px; height: 3px; background: var(--white); transition: all 0.2s; }
+    .hamburger.open span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+    @media (max-width: 600px) {
+      .hamburger { display: flex; }
+      .nav-links { display: none; flex-direction: column; width: 100%; padding-bottom: 0.5rem; }
+      .nav-links.open { display: flex; }
+      nav a { padding: 0.8rem 0; border-bottom: 1px solid #222; }
+      nav a::after { display: none; }
+    }
+    nav a.active { color: var(--yellow); }
+    nav a.active::after { transform: scaleX(1); background: var(--yellow); }
+
+    /* ── PAGE HEADER ── */
+    .page-header { padding: 4rem 2rem 2rem; border-bottom: 3px solid var(--black); max-width: 860px; }
+    .page-label { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 3px; color: var(--yellow); background: var(--black); display: inline-block; padding: 0.3rem 0.8rem; margin-bottom: 1rem; }
+    .page-header h1 { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: clamp(2.5rem, 6vw, 4rem); line-height: 1.05; }
+    .page-header p { margin-top: 1rem; color: #444; line-height: 1.7; max-width: 600px; font-size: 1rem; }
+
+    /* ── CONTENT ── */
+    .content { padding: 3rem 2rem 5rem; max-width: 860px; flex: 1; }
+    .back-link { display: inline-block; margin-bottom: 2.5rem; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; color: var(--black); text-decoration: none; border-bottom: 2px solid var(--black); padding-bottom: 1px; }
+    .back-link:hover { color: var(--pink); border-color: var(--pink); }
+
+    /* ── INSTRUCTIONS ── */
+    .instructions {
+      border: 3px solid var(--black);
+      margin-bottom: 2.5rem;
+    }
+    .instructions-header {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 1.2rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .instructions-header:hover { background: #222; }
+    .instructions-toggle { font-size: 1.4rem; line-height: 1; transition: transform 0.2s; }
+    .instructions-toggle.open { transform: rotate(45deg); }
+    .instructions-body {
+      display: none;
+      padding: 0;
+    }
+    .instructions-body.open { display: block; }
+
+    .instr-section {
+      border-bottom: 2px solid var(--black);
+      padding: 1.5rem;
+    }
+    .instr-section:last-child { border-bottom: none; }
+
+    .instr-section h3 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.8rem;
+    }
+
+    .instr-section p, .instr-section li {
+      font-size: 0.95rem;
+      color: #444;
+      line-height: 1.7;
+    }
+
+    .instr-section ol, .instr-section ul {
+      padding-left: 1.5rem;
+      margin-top: 0.5rem;
+    }
+    .instr-section li { margin-bottom: 0.3rem; }
+
+    .instr-section .highlight-box {
+      background: #f9f9f9;
+      border-left: 4px solid var(--yellow);
+      padding: 0.8rem 1rem;
+      margin-top: 0.8rem;
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    .instr-tabs {
+      display: flex;
+      border-bottom: 2px solid var(--black);
+    }
+    .instr-tab {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 0.8rem 1.5rem;
+      cursor: pointer;
+      background: #f5f5f5;
+      border-right: 2px solid var(--black);
+      color: #888;
+      transition: background 0.15s, color 0.15s;
+    }
+    .instr-tab:last-child { border-right: none; }
+    .instr-tab.active { background: var(--mint); color: var(--black); }
+    .instr-tab:hover:not(.active) { background: #eee; color: var(--black); }
+
+    .instr-panel { display: none; padding: 1.5rem; border-bottom: 2px solid var(--black); }
+    .instr-panel.active { display: block; }
+
+    .template-btns {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    .template-btn {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 0.6rem 1.2rem;
+      border: 2px solid var(--black);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: transform 0.15s, box-shadow 0.15s;
+      background: var(--white);
+      color: var(--black);
+    }
+    .template-btn:hover { transform: translate(-2px,-2px); box-shadow: 4px 4px 0 var(--black); }
+    .template-btn-sheets { background: var(--mint); }
+    .template-btn-excel  { background: var(--yellow); }
+
+    /* ── FORMAT TABLE ── */
+    .format-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-top: 0.8rem;
+    }
+    .format-table th {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 0.5rem 0.8rem;
+      text-align: left;
+    }
+    .format-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #ddd; color: #555; vertical-align: top; }
+    .format-table tr:last-child td { border-bottom: none; }
+    .format-table tr:nth-child(even) td { background: #f9f9f9; }
+
+    /* ── TOOL FORM ── */
+    .tool-form {
+      border: 3px solid var(--black);
+      margin-bottom: 2rem;
+    }
+
+    .tool-form-header {
+      background: var(--black);
+      color: var(--yellow);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 1.2rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 1rem 1.5rem;
+    }
+
+    .tool-form-body { padding: 1.5rem; }
+
+    /* Input method tabs */
+    .method-tabs {
+      display: flex;
+      border: 2px solid var(--black);
+      margin-bottom: 1.5rem;
+    }
+    .method-tab {
+      flex: 1;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 0.8rem 1rem;
+      cursor: pointer;
+      background: var(--white);
+      color: #888;
+      border: none;
+      border-right: 2px solid var(--black);
+      transition: background 0.15s, color 0.15s;
+      text-align: center;
+    }
+    .method-tab:last-child { border-right: none; }
+    .method-tab.active { background: var(--yellow); color: var(--black); }
+    .method-tab:hover:not(.active) { background: #f5f5f5; color: var(--black); }
+
+    .method-panel { display: none; }
+    .method-panel.active { display: block; }
+
+    /* Upload area */
+    .upload-area {
+      border: 3px dashed #ccc;
+      padding: 2.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+    .upload-area:hover, .upload-area.dragover { border-color: var(--pink); background: #fff5fb; }
+    .upload-area.has-file { border-color: var(--mint); background: #f0fff8; border-style: solid; }
+    .upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+    .upload-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .upload-label { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; }
+    .upload-hint { font-size: 0.85rem; color: #888; margin-top: 0.3rem; }
+    .upload-filename { font-size: 0.9rem; color: #1a8f4e; font-weight: 600; margin-top: 0.5rem; }
+
+    /* URL input */
+    .url-method-desc {
+      font-size: 0.9rem;
+      color: #444;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+    .url-input-row { display: flex; gap: 0; }
+    .url-input {
+      flex: 1;
+      font-family: 'Barlow', sans-serif;
+      font-size: 0.95rem;
+      border: 2px solid var(--black);
+      border-right: none;
+      padding: 0.7rem 1rem;
+      outline: none;
+      background: var(--white);
+    }
+    .url-input:focus { border-color: var(--yellow); }
+    .url-fetch-btn {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 0.7rem 1.2rem;
+      border: 2px solid var(--black);
+      cursor: pointer;
+      background: var(--yellow);
+      color: var(--black);
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .url-fetch-btn:hover { background: var(--orange); }
+    .url-status { font-size: 0.85rem; margin-top: 0.5rem; min-height: 1.2em; }
+    .url-status.ok  { color: #1a8f4e; }
+    .url-status.err { color: var(--pink); }
+
+    /* Options */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    @media (max-width: 600px) { .options-grid { grid-template-columns: 1fr; } }
+
+    .option-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .option-group label { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; }
+    .option-group input[type="text"] { font-family: 'Barlow', sans-serif; font-size: 0.95rem; border: 2px solid var(--black); padding: 0.6rem 0.8rem; outline: none; transition: border-color 0.2s; }
+    .option-group input[type="text"]:focus { border-color: var(--yellow); }
+
+    /* Checkboxes / radios */
+    .check-row { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-size: 0.95rem; margin-bottom: 0.4rem; }
+    .check-row input[type="checkbox"], .check-row input[type="radio"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--pink); flex-shrink: 0; }
+    .reminder-sub { padding-left: 1.6rem; margin-top: 0.3rem; display: none; }
+    .reminder-sub.open { display: block; }
+
+    .radio-row { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-size: 0.95rem; margin-bottom: 0.4rem; }
+    .radio-row input[type="radio"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--pink); flex-shrink: 0; }
+
+    .options-divider { height: 2px; background: #eee; margin: 1.5rem 0; }
+
+    /* Generate button */
+    .generate-btn {
+      margin-top: 1.5rem;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 1rem 2.5rem;
+      border: 3px solid var(--black);
+      cursor: pointer;
+      background: var(--pink);
+      color: var(--white);
+      display: block;
+      width: 100%;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .generate-btn:hover { transform: translate(-3px,-3px); box-shadow: 5px 5px 0 var(--black); }
+    .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+    /* Status / error */
+    .status-msg { display: none; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; padding: 0.8rem 1.2rem; border: 2px solid; margin-top: 1rem; }
+    .status-msg.error   { display: block; background: #fff0f5; color: var(--pink);  border-color: var(--pink); }
+    .status-msg.success { display: block; background: #f0fff8; color: #1a8f4e;       border-color: #1a8f4e; }
+    .status-msg.info    { display: block; background: #fffbe6; color: #7a5c00;       border-color: var(--yellow); }
+
+    /* Results */
+    #results { display: none; }
+    .results-box {
+      border: 3px solid var(--black);
+      padding: 2rem;
+      background: var(--black);
+      color: var(--white);
+      text-align: center;
+    }
+    .results-box h2 { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 2rem; text-transform: uppercase; color: var(--mint); margin-bottom: 0.5rem; }
+    .results-box .event-count { font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; letter-spacing: 1px; text-transform: uppercase; color: #aaa; margin-bottom: 1.5rem; }
+    .download-btn {
+      display: inline-block;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 1rem 2rem;
+      border: 3px solid var(--mint);
+      cursor: pointer;
+      background: var(--mint);
+      color: var(--black);
+      text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .download-btn:hover { transform: translate(-3px,-3px); box-shadow: 5px 5px 0 var(--mint); }
+    .results-hint { font-size: 0.85rem; color: #888; margin-top: 1rem; line-height: 1.6; }
+
+    /* ── FOOTER ── */
+    footer { background: var(--black); color: #888; text-align: center; padding: 1.5rem 2rem; font-size: 0.85rem; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1px; text-transform: uppercase; }
+    footer span { color: var(--pink); }
+    .footer-social { display: flex; justify-content: center; align-items: center; gap: 2rem; margin-bottom: 1.2rem; }
+    .footer-social a { color: var(--mint); display: flex; align-items: center; transition: color 0.2s, transform 0.2s; }
+    .footer-social a:hover { color: var(--white); transform: translateY(-3px); }
+    .footer-social svg { width: 28px; height: 28px; fill: currentColor; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+    <div class="site-title"><a href="index.html">anarkid<span>.xyz</span></a></div>
+  </header>
+
+  <nav>
+    <div class="nav-links" id="nav-links">
+      <a href="index.html">Home</a>
+      <a href="about.html">About Me</a>
+      <a href="running-coaching.html">Running Coaching</a>
+      <a href="irl-creations.html">IRL Creations</a>
+      <a href="projects.html" class="active">Projects</a>
+    </div>
+  </nav>
+
+  <script>
+    const hbtn = document.getElementById('hamburger');
+    const hmenu = document.getElementById('nav-links');
+    hbtn.addEventListener('click', () => { hbtn.classList.toggle('open'); hmenu.classList.toggle('open'); });
+  </script>
+
+  <main>
+    <div class="page-header">
+      <div class="page-label">Project</div>
+      <h1>Training Plan to Calendar</h1>
+      <p>Upload your training plan spreadsheet — or paste a published Google Sheets link — and download a .ics calendar file you can import into Google Calendar, Apple Calendar, or Outlook.</p>
+    </div>
+
+    <div class="content">
+      <a class="back-link" href="projects.html">← Back to Projects</a>
+
+      <!-- ── INSTRUCTIONS ── -->
+      <div class="instructions">
+        <div class="instructions-header" id="instr-toggle" onclick="toggleInstructions()">
+          <span>How to use this tool</span>
+          <span class="instructions-toggle" id="instr-icon">+</span>
+        </div>
+        <div class="instructions-body" id="instr-body">
+
+          <!-- Tabs: Template format / Upload / Google Sheets -->
+          <div class="instr-tabs">
+            <div class="instr-tab active" onclick="showInstrTab('format')">1. Template format</div>
+            <div class="instr-tab" onclick="showInstrTab('upload')">2. Upload (Excel / CSV)</div>
+            <div class="instr-tab" onclick="showInstrTab('sheets')">3. Google Sheets link</div>
+          </div>
+
+          <!-- Tab: Format -->
+          <div class="instr-panel active" id="instr-format">
+            <h3>Your spreadsheet must use this exact layout</h3>
+            <p>This tool only works with the correct template. Download the template below and fill it in — <strong>do not change the structure of the sheet</strong>, only add your training data.</p>
+            <div class="template-btns">
+              <a class="template-btn template-btn-sheets" href="https://docs.google.com/spreadsheets/d/11ViNiN_mBl71_kpWapL8TCXMSg8DKCs-NyfTxQlfthg/copy" target="_blank" rel="noopener">Open template in Google Sheets →</a>
+              <a class="template-btn template-btn-excel" href="Training_plan_template_tool.xlsx" download>Download Excel template ↓</a>
+            </div>
+
+            <table class="format-table" style="margin-top:1.2rem;">
+              <thead><tr><th>Cell</th><th>What to put there</th></tr></thead>
+              <tbody>
+                <tr><td>C2</td><td>Number of weeks in the plan (e.g. 16)</td></tr>
+                <tr><td>C3</td><td>Race date</td></tr>
+                <tr><td>C4</td><td>Plan start date (a Monday)</td></tr>
+                <tr><td>Row 6</td><td>Header row — do not change</td></tr>
+                <tr><td>Row 7 onwards</td><td>One row per training week. Col B = week label, Col C = Monday date, then alternating session / details pairs for Mon–Sun (cols D–Q), then Total / Details in cols R–S</td></tr>
+              </tbody>
+            </table>
+
+            <div class="highlight-box" style="margin-top:1rem;">
+              <strong>Important:</strong> Dates in column C are automatically calculated from the plan start date — you don't need to fill these in yourself. Just enter data in the session and details columns (D onwards).
+            </div>
+          </div>
+
+          <!-- Tab: Upload -->
+          <div class="instr-panel" id="instr-upload">
+            <h3>Option A — Upload a file directly</h3>
+            <p>This is the simplest option. When you're ready, save your file and upload it below.</p>
+            <ol>
+              <li>Fill in the template (Excel or Google Sheets).</li>
+              <li>If using Google Sheets: go to <strong>File → Download → Microsoft Excel (.xlsx)</strong> to save a copy.</li>
+              <li>Click the upload area below and choose your file. Both <strong>.xlsx</strong> and <strong>.csv</strong> files are accepted.</li>
+              <li>Set your options and click Generate.</li>
+            </ol>
+            <div class="highlight-box">
+              <strong>Tip:</strong> In Google Sheets you can also download as CSV — go to File → Download → Comma-separated values (.csv). Either format works with this tool.
+            </div>
+          </div>
+
+          <!-- Tab: Google Sheets -->
+          <div class="instr-panel" id="instr-sheets">
+            <h3>Option B — Paste a Google Sheets link</h3>
+            <p>This lets the tool read your sheet directly, without downloading anything. It requires you to publish the sheet publicly first.</p>
+            <ol>
+              <li>In Google Sheets, go to <strong>File → Share → Publish to web</strong>.</li>
+              <li>Under "Link", choose the sheet tab containing your plan (e.g. "Training plan to calendar").</li>
+              <li>Change the format dropdown from "Web page" to <strong>CSV</strong>.</li>
+              <li>Click <strong>Publish</strong>, then copy the link it gives you.</li>
+              <li>Paste that link into the "Google Sheets URL" box below and click Fetch.</li>
+            </ol>
+            <div class="highlight-box">
+              <strong>Note:</strong> Publishing to the web makes your sheet's data publicly accessible to anyone who has the link. Your training plan data isn't sensitive, but it's worth knowing. This is a different setting to the normal "Share" button — it creates a separate public URL.
+            </div>
+          </div>
+
+        </div><!-- /instructions-body -->
+      </div><!-- /instructions -->
+
+      <!-- ── TOOL FORM ── -->
+      <div class="tool-form">
+        <div class="tool-form-header">Your Training Plan</div>
+        <div class="tool-form-body">
+
+          <!-- Method tabs -->
+          <div class="method-tabs">
+            <button class="method-tab active" onclick="switchMethod('upload')">Upload file</button>
+            <button class="method-tab" onclick="switchMethod('url')">Google Sheets link</button>
+          </div>
+
+          <!-- Upload panel -->
+          <div class="method-panel active" id="panel-upload">
+            <div class="upload-area" id="upload-area">
+              <input type="file" id="file-input" accept=".xlsx,.xls,.csv" />
+              <div class="upload-icon">📁</div>
+              <div class="upload-label">Click to choose file, or drag and drop</div>
+              <div class="upload-hint">Accepts .xlsx or .csv files</div>
+              <div class="upload-filename" id="upload-filename"></div>
+            </div>
+          </div>
+
+          <!-- URL panel -->
+          <div class="method-panel" id="panel-url">
+            <p class="url-method-desc">Paste the CSV link from Google Sheets (File → Share → Publish to web → CSV). See the instructions above for the full steps.</p>
+            <div class="url-input-row">
+              <input type="text" class="url-input" id="url-input" placeholder="https://docs.google.com/spreadsheets/d/…/pub?output=csv" />
+              <button class="url-fetch-btn" onclick="fetchURL()">Fetch</button>
+            </div>
+            <div class="url-status" id="url-status"></div>
+          </div>
+
+          <div class="options-divider"></div>
+
+          <!-- Options -->
+          <div class="options-grid">
+            <div class="option-group">
+              <label>Calendar name</label>
+              <input type="text" id="cal-name" value="Training Plan" placeholder="e.g. Marathon Training" />
+            </div>
+            <div class="option-group">
+              <label>Options</label>
+              <label class="check-row">
+                <input type="checkbox" id="incl-summaries" checked />
+                Include weekly summary events
+              </label>
+              <label class="check-row">
+                <input type="checkbox" id="incl-race" checked />
+                Include race day event
+              </label>
+            </div>
+          </div>
+
+          <div class="options-divider"></div>
+
+          <div>
+            <label class="check-row" style="font-weight:600;">
+              <input type="checkbox" id="reminders-on" onchange="toggleReminders()" />
+              Add reminders to daily sessions
+            </label>
+            <div class="reminder-sub" id="reminder-sub">
+              <label class="check-row">
+                <input type="checkbox" id="rem-evening" checked />
+                Evening before (8:00 pm)
+              </label>
+              <label class="check-row">
+                <input type="checkbox" id="rem-morning" />
+                Morning of (7:00 am)
+              </label>
+            </div>
+          </div>
+
+          <button class="generate-btn" onclick="generate()">Generate calendar file</button>
+          <div class="status-msg" id="status-msg"></div>
+
+        </div>
+      </div>
+
+      <!-- ── RESULTS ── -->
+      <div id="results">
+        <div class="results-box">
+          <h2>✓ Calendar ready</h2>
+          <div class="event-count" id="event-count"></div>
+          <a id="download-link" class="download-btn" download="training-plan.ics">Download .ics file</a>
+          <p class="results-hint">
+            Import into Google Calendar: Settings → Import &amp; Export → Import.<br>
+            Apple Calendar: double-click the file.<br>
+            Outlook: File → Open &amp; Export → Import/Export → Import an iCalendar file.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-social">
+      <a href="https://bsky.app/profile/anarkid.bsky.social" target="_blank" rel="noopener" aria-label="Bluesky">
+        <svg viewBox="0 0 600 530" xmlns="http://www.w3.org/2000/svg"><path d="m135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.795 0 17.712-10.155 148.79-16.111 170.07-20.703 73.984-96.144 92.854-163.25 81.433 117.3 19.964 147.14 86.092 82.697 152.22-122.39 125.59-175.91-31.511-189.63-71.766-2.514-7.3797-3.6904-10.832-3.7077-7.8964-0.0174-2.9357-1.1937 0.51669-3.7077 7.8964-13.714 40.255-67.233 197.36-189.63 71.766-64.444-66.128-34.605-132.26 82.697-152.22-67.108 11.421-142.55-7.4491-163.25-81.433-5.9562-21.282-16.111-152.36-16.111-170.07 0-88.687 77.742-60.816 125.72-24.795z" fill="currentColor"/></svg>
+      </a>
+      <a href="https://www.strava.com/athletes/11624652" target="_blank" rel="noopener" aria-label="Strava">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0 4 13.828h4.172"/></svg>
+      </a>
+      <a href="mailto:ted@anarkid.xyz" aria-label="Email">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+      </a>
+    </div>
+    <span>anarkid.xyz</span> &mdash; built from scratch
+  </footer>
+
+  <script>
+  // ─────────────────────────────────────────────────────────────
+  // UI HELPERS
+  // ─────────────────────────────────────────────────────────────
+  let csvData = null;   // parsed 2D array of strings
+  let inputMode = 'upload'; // 'upload' | 'url'
+
+  function toggleInstructions() {
+    const body = document.getElementById('instr-body');
+    const icon = document.getElementById('instr-icon');
+    body.classList.toggle('open');
+    icon.classList.toggle('open');
+  }
+
+  function showInstrTab(tab) {
+    document.querySelectorAll('.instr-tab').forEach((t, i) => {
+      const ids = ['format','upload','sheets'];
+      t.classList.toggle('active', ids[i] === tab);
+    });
+    document.querySelectorAll('.instr-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('instr-' + tab).classList.add('active');
+  }
+
+  function switchMethod(mode) {
+    inputMode = mode;
+    document.querySelectorAll('.method-tab').forEach((t, i) => {
+      t.classList.toggle('active', (i === 0 && mode === 'upload') || (i === 1 && mode === 'url'));
+    });
+    document.getElementById('panel-upload').classList.toggle('active', mode === 'upload');
+    document.getElementById('panel-url').classList.toggle('active', mode === 'url');
+    csvData = null;
+    clearStatus();
+  }
+
+  function toggleReminders() {
+    const on = document.getElementById('reminders-on').checked;
+    document.getElementById('reminder-sub').classList.toggle('open', on);
+  }
+
+  function setStatus(type, msg) {
+    const el = document.getElementById('status-msg');
+    el.className = 'status-msg ' + type;
+    el.textContent = msg;
+  }
+  function clearStatus() {
+    const el = document.getElementById('status-msg');
+    el.className = 'status-msg';
+    el.textContent = '';
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // FILE UPLOAD
+  // ─────────────────────────────────────────────────────────────
+  const fileInput = document.getElementById('file-input');
+  const uploadArea = document.getElementById('upload-area');
+
+  fileInput.addEventListener('change', e => {
+    if (e.target.files[0]) readFile(e.target.files[0]);
+  });
+
+  uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+  uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+  uploadArea.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    if (e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]);
+  });
+
+  function readFile(file) {
+    const fname = document.getElementById('upload-filename');
+    fname.textContent = '';
+    clearStatus();
+    const ext = file.name.split('.').pop().toLowerCase();
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        let rows;
+        if (ext === 'csv') {
+          rows = parseCSV(e.target.result);
+        } else {
+          const wb = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+          const sheetName = wb.SheetNames.find(n => n.toLowerCase().includes('training') || n.toLowerCase().includes('plan')) || wb.SheetNames[0];
+          const ws = wb.Sheets[sheetName];
+          rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false, dateNF: 'yyyy-mm-dd' });
+        }
+        csvData = rows;
+        uploadArea.classList.add('has-file');
+        fname.textContent = '✓ ' + file.name;
+        clearStatus();
+      } catch(err) {
+        setStatus('error', 'Could not read file: ' + err.message);
+      }
+    };
+    if (ext === 'csv') reader.readAsText(file);
+    else reader.readAsArrayBuffer(file);
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // GOOGLE SHEETS URL FETCH
+  // ─────────────────────────────────────────────────────────────
+  async function fetchURL() {
+    const url = document.getElementById('url-input').value.trim();
+    const statusEl = document.getElementById('url-status');
+    if (!url) { statusEl.className = 'url-status err'; statusEl.textContent = 'Please enter a URL.'; return; }
+
+    // Validate it looks like a Google Sheets publish URL
+    if (!url.includes('docs.google.com/spreadsheets')) {
+      statusEl.className = 'url-status err';
+      statusEl.textContent = 'That doesn\'t look like a Google Sheets URL. Check you\'ve used File → Share → Publish to web → CSV.';
+      return;
+    }
+
+    statusEl.className = 'url-status';
+    statusEl.textContent = 'Fetching…';
+    csvData = null;
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      csvData = parseCSV(text);
+      statusEl.className = 'url-status ok';
+      statusEl.textContent = '✓ Sheet loaded — ' + (csvData.length - 6) + ' data rows found.';
+    } catch(err) {
+      statusEl.className = 'url-status err';
+      statusEl.textContent = 'Could not fetch the sheet. Make sure it\'s published as CSV and the link is correct.';
+      csvData = null;
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // CSV PARSER (handles quoted fields)
+  // ─────────────────────────────────────────────────────────────
+  function parseCSV(text) {
+    const rows = [];
+    const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+    for (const line of lines) {
+      const cells = [];
+      let cur = '', inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+          else inQ = !inQ;
+        } else if (ch === ',' && !inQ) {
+          cells.push(cur.trim()); cur = '';
+        } else {
+          cur += ch;
+        }
+      }
+      cells.push(cur.trim());
+      rows.push(cells);
+    }
+    return rows;
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // SPREADSHEET PARSER
+  //
+  // Layout (1-indexed rows, 1-indexed cols):
+  //   Row 2, Col C (idx 2): number of weeks
+  //   Row 3, Col C (idx 2): race date
+  //   Row 4, Col C (idx 2): plan start date
+  //   Row 6: headers
+  //   Row 7+: weekly data
+  //     col B (idx 1): week label
+  //     col C (idx 2): Monday date
+  //     cols D–Q (idx 3–16): 7 × (session, details) pairs = Mon through Sun
+  //     col R (idx 17): total
+  //     col S (idx 18): total details
+  // ─────────────────────────────────────────────────────────────
+  function parseSheet(rows) {
+    // rows is 0-indexed
+    const r = rows; // shorthand
+
+    const getCell = (rowIdx, colIdx) => (r[rowIdx] && r[rowIdx][colIdx] !== undefined) ? String(r[rowIdx][colIdx]).trim() : '';
+
+    // Read meta (row 2 = idx 1, row 3 = idx 2, row 4 = idx 3; col C = idx 2)
+    const numWeeksRaw = getCell(1, 2);
+    const raceDateRaw = getCell(2, 2);
+    const startDateRaw = getCell(3, 2);
+
+    if (!startDateRaw) throw new Error('Could not find plan start date in cell C4. Check your spreadsheet matches the template.');
+    if (!raceDateRaw)  throw new Error('Could not find race date in cell C3. Check your spreadsheet matches the template.');
+
+    const planStart = parseDate(startDateRaw);
+    const raceDate  = parseDate(raceDateRaw);
+
+    if (!planStart) throw new Error('Could not read plan start date ("' + startDateRaw + '"). Make sure it\'s a date value in cell C4.');
+    if (!raceDate)  throw new Error('Could not read race date ("' + raceDateRaw + '"). Make sure it\'s a date value in cell C3.');
+
+    // Week rows start at row index 6 (row 7 in spreadsheet)
+    const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    const sessions = [];
+    const weeklySummaries = [];
+
+    for (let ri = 6; ri < r.length; ri++) {
+      const weekLabel = getCell(ri, 1);
+      if (!weekLabel || !weekLabel.toLowerCase().startsWith('week')) continue;
+
+      const mondayRaw = getCell(ri, 2);
+      const monday = parseDate(mondayRaw);
+      if (!monday) continue;
+
+      // Daily sessions: cols D–Q = indices 3–16, pairs of (session, detail)
+      for (let d = 0; d < 7; d++) {
+        const sessionCol = 3 + d * 2;
+        const detailCol  = 4 + d * 2;
+        const session = getCell(ri, sessionCol);
+        const detail  = getCell(ri, detailCol);
+        if (!session) continue;
+
+        const date = new Date(monday);
+        date.setDate(monday.getDate() + d);
+
+        const title = session;
+        const desc  = detail || '';
+        sessions.push({ date, title, desc, isWeekly: false, weekLabel });
+      }
+
+      // Weekly summary: cols R–S = indices 17–18
+      const total       = getCell(ri, 17);
+      const totalDetail = getCell(ri, 18);
+      if (total) {
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        weeklySummaries.push({ monday, sunday, weekLabel, total, detail: totalDetail || '' });
+      }
+    }
+
+    return { sessions, weeklySummaries, raceDate, planStart };
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // DATE PARSING — handles various formats
+  // ─────────────────────────────────────────────────────────────
+  function parseDate(raw) {
+    if (!raw) return null;
+    const s = String(raw).trim();
+    if (!s) return null;
+
+    // Already ISO yyyy-mm-dd
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+      const d = new Date(s + 'T00:00:00');
+      return isNaN(d) ? null : d;
+    }
+
+    // dd/mm/yyyy
+    const dmy = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (dmy) {
+      const d = new Date(parseInt(dmy[3]), parseInt(dmy[2])-1, parseInt(dmy[1]));
+      return isNaN(d) ? null : d;
+    }
+
+    // mm/dd/yyyy
+    const mdy = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (mdy) {
+      const d = new Date(parseInt(mdy[3]), parseInt(mdy[1])-1, parseInt(mdy[2]));
+      return isNaN(d) ? null : d;
+    }
+
+    // JavaScript Date parse (handles many formats)
+    const d = new Date(s);
+    if (!isNaN(d)) return d;
+
+    return null;
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // ICS GENERATION
+  // ─────────────────────────────────────────────────────────────
+  function icsDate(d) {
+    const yr = d.getFullYear();
+    const mo = String(d.getMonth()+1).padStart(2,'0');
+    const dy = String(d.getDate()).padStart(2,'0');
+    return `${yr}${mo}${dy}`;
+  }
+
+  function nextDay(d) {
+    const nd = new Date(d);
+    nd.setDate(d.getDate() + 1);
+    return nd;
+  }
+
+  function icsEscape(s) {
+    return String(s).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
+  }
+
+  function foldLine(line) {
+    // ICS spec: lines > 75 octets must be folded
+    const out = [];
+    while (line.length > 75) {
+      out.push(line.slice(0, 75));
+      line = ' ' + line.slice(75);
+    }
+    out.push(line);
+    return out.join('\r\n');
+  }
+
+  function uid() {
+    return Date.now() + '-' + Math.random().toString(36).slice(2) + '@anarkid.xyz';
+  }
+
+  function buildAlarms(reminderEvening, reminderMorning) {
+    const alarms = [];
+    if (reminderEvening) {
+      // 8pm the evening before = -240 minutes from midnight of the event day
+      alarms.push([
+        'BEGIN:VALARM',
+        'ACTION:DISPLAY',
+        'DESCRIPTION:Training tomorrow',
+        'TRIGGER;RELATED=START:-PT240M',
+        'END:VALARM'
+      ].join('\r\n'));
+    }
+    if (reminderMorning) {
+      // 7am same day = +420 minutes from midnight
+      alarms.push([
+        'BEGIN:VALARM',
+        'ACTION:DISPLAY',
+        'DESCRIPTION:Training today',
+        'TRIGGER;RELATED=START:PT420M',
+        'END:VALARM'
+      ].join('\r\n'));
+    }
+    return alarms;
+  }
+
+  function buildICS(data, calName, inclSummaries, inclRace, remEvening, remMorning) {
+    const lines = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//anarkid.xyz//Training Plan to Calendar//EN',
+      foldLine('X-WR-CALNAME:' + icsEscape(calName)),
+      'X-WR-TIMEZONE:Europe/London',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+    ];
+
+    const alarms = buildAlarms(remEvening, remMorning);
+    let eventCount = 0;
+
+    // Daily sessions
+    for (const s of data.sessions) {
+      const dtstart = icsDate(s.date);
+      const dtend   = icsDate(nextDay(s.date));
+      lines.push('BEGIN:VEVENT');
+      lines.push('UID:' + uid());
+      lines.push(foldLine('SUMMARY:' + icsEscape(s.title)));
+      lines.push('DTSTART;VALUE=DATE:' + dtstart);
+      lines.push('DTEND;VALUE=DATE:' + dtend);
+      if (s.desc) lines.push(foldLine('DESCRIPTION:' + icsEscape(s.desc)));
+      for (const a of alarms) lines.push(a);
+      lines.push('END:VEVENT');
+      eventCount++;
+    }
+
+    // Weekly summaries
+    if (inclSummaries) {
+      for (const w of data.weeklySummaries) {
+        const dtstart = icsDate(w.monday);
+        const dtend   = icsDate(nextDay(w.sunday));
+        const title   = w.weekLabel + ': ' + w.total;
+        lines.push('BEGIN:VEVENT');
+        lines.push('UID:' + uid());
+        lines.push(foldLine('SUMMARY:' + icsEscape(title)));
+        lines.push('DTSTART;VALUE=DATE:' + dtstart);
+        lines.push('DTEND;VALUE=DATE:' + dtend);
+        if (w.detail) lines.push(foldLine('DESCRIPTION:' + icsEscape(w.detail)));
+        lines.push('END:VEVENT');
+        eventCount++;
+      }
+    }
+
+    // Race day
+    if (inclRace && data.raceDate) {
+      const dtstart = icsDate(data.raceDate);
+      const dtend   = icsDate(nextDay(data.raceDate));
+      lines.push('BEGIN:VEVENT');
+      lines.push('UID:' + uid());
+      lines.push('SUMMARY:🏁 RACE DAY');
+      lines.push('DTSTART;VALUE=DATE:' + dtstart);
+      lines.push('DTEND;VALUE=DATE:' + dtend);
+      lines.push('END:VEVENT');
+      eventCount++;
+    }
+
+    lines.push('END:VCALENDAR');
+    return { ics: lines.join('\r\n'), eventCount };
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // GENERATE
+  // ─────────────────────────────────────────────────────────────
+  function generate() {
+    clearStatus();
+    document.getElementById('results').style.display = 'none';
+
+    if (!csvData) {
+      if (inputMode === 'upload') {
+        setStatus('error', 'Please upload a file first.');
+      } else {
+        setStatus('error', 'Please fetch a Google Sheets link first.');
+      }
+      return;
+    }
+
+    let data;
+    try {
+      data = parseSheet(csvData);
+    } catch(err) {
+      setStatus('error', err.message);
+      return;
+    }
+
+    if (!data.sessions.length) {
+      setStatus('error', 'No training sessions found. Check your spreadsheet has sessions filled in from row 7 onwards, and matches the template format.');
+      return;
+    }
+
+    const calName      = document.getElementById('cal-name').value.trim() || 'Training Plan';
+    const inclSummaries = document.getElementById('incl-summaries').checked;
+    const inclRace     = document.getElementById('incl-race').checked;
+    const reminders    = document.getElementById('reminders-on').checked;
+    const remEvening   = reminders && document.getElementById('rem-evening').checked;
+    const remMorning   = reminders && document.getElementById('rem-morning').checked;
+
+    const { ics, eventCount } = buildICS(data, calName, inclSummaries, inclRace, remEvening, remMorning);
+
+    // Create download link
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const link = document.getElementById('download-link');
+    link.href  = url;
+    const safeName = calName.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+    link.download = safeName + '.ics';
+
+    // Count breakdown
+    const sessCount = data.sessions.length;
+    const sumCount  = inclSummaries ? data.weeklySummaries.length : 0;
+    const raceCount = (inclRace && data.raceDate) ? 1 : 0;
+    const parts = [sessCount + ' training session' + (sessCount !== 1 ? 's' : '')];
+    if (sumCount) parts.push(sumCount + ' weekly summar' + (sumCount !== 1 ? 'ies' : 'y'));
+    if (raceCount) parts.push('1 race day event');
+
+    document.getElementById('event-count').textContent = parts.join(' · ');
+    document.getElementById('results').style.display = 'block';
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  </script>
+
+</body>
+</html>
