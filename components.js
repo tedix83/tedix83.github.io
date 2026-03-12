@@ -258,10 +258,16 @@
   document.addEventListener('DOMContentLoaded', function () {
 
     const headerSlot = document.getElementById('site-header');
-    if (headerSlot) headerSlot.outerHTML = buildHeader();
+    if (headerSlot) {
+      headerSlot.insertAdjacentHTML('afterend', buildHeader());
+      headerSlot.parentNode.removeChild(headerSlot);
+    }
 
     const footerSlot = document.getElementById('site-footer');
-    if (footerSlot) footerSlot.outerHTML = buildFooter();
+    if (footerSlot) {
+      footerSlot.insertAdjacentHTML('afterend', buildFooter());
+      footerSlot.parentNode.removeChild(footerSlot);
+    }
 
     const btn = document.getElementById('hamburger');
     const menu = document.getElementById('nav-links');
