@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Statement Splitter — anarkid.xyz</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    :root {
+      --mint:   #85FFBE;
+      --pink:   #E72696;
+      --orange: #F99B1D;
+      --yellow: #FACF31;
+      --black:  #111111;
+      --white:  #ffffff;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--white); color: var(--black); font-family: 'Barlow', sans-serif; font-size: 1.1rem; min-height: 100vh; }
+
+    /* HEADER */
+    header { background: var(--black); padding: 2.5rem 2rem 1.5rem; position: relative; }
+    header::after { content: ''; display: block; height: 6px; background: linear-gradient(90deg, var(--mint), var(--pink), var(--orange), var(--yellow)); }
+    .site-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: clamp(3rem, 8vw, 6rem); color: var(--white); letter-spacing: -1px; line-height: 1; text-transform: lowercase; text-decoration: none; display: inline-block; }
+    .site-title span { color: var(--pink); }
+
+    /* NAV */
+    nav { background: var(--black); padding: 0 2rem; display: flex; align-items: center; flex-wrap: wrap; position: relative; }
+    .nav-links { display: flex; flex-wrap: wrap; }
+    nav a { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--white); text-decoration: none; padding: 1rem 1.5rem; position: relative; transition: color 0.2s; display: block; }
+    nav a::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: var(--pink); transform: scaleX(0); transition: transform 0.2s; }
+    nav a:hover { color: var(--yellow); }
+    nav a:hover::after { transform: scaleX(1); }
+    nav a.active { color: var(--mint); }
+    nav a.active::after { transform: scaleX(1); background: var(--mint); }
+    .hamburger { display: none; position: absolute; top: 50%; right: 2rem; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 0; flex-direction: column; gap: 5px; z-index: 100; }
+    .hamburger span { display: block; width: 26px; height: 3px; background: var(--white); transition: all 0.2s; }
+    .hamburger.open span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+    @media (max-width: 600px) {
+      .hamburger { display: flex; }
+      .nav-links { display: none; flex-direction: column; width: 100%; padding-bottom: 0.5rem; }
+      .nav-links.open { display: flex; }
+      nav a { padding: 0.8rem 0; border-bottom: 1px solid #222; }
+      nav a::after { display: none; }
+    }
+
+    /* MAIN */
+    main { padding: 3rem 2rem 5rem; max-width: 1100px; }
+    .page-label { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 3px; color: var(--pink); margin-bottom: 1rem; }
+    .page-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: clamp(2.5rem, 6vw, 4rem); line-height: 1.05; margin-bottom: 1rem; }
+    .page-desc { font-size: 1.05rem; color: #555; line-height: 1.7; max-width: 640px; margin-bottom: 2rem; }
+
+    /* RULES STATUS */
+    .rules-status { font-size: 0.85rem; color: #555; margin-bottom: 2rem; padding: 0.6rem 1rem; border-left: 3px solid var(--mint); background: #f8fff8; }
+    .rules-status.warn { border-color: var(--orange); background: #fffaf0; color: #b06000; }
+
+    /* UPLOAD */
+    .upload-zone { border: 3px dashed var(--black); padding: 3rem 2rem; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; margin-bottom: 2rem; position: relative; }
+    .upload-zone:hover, .upload-zone.dragover { border-color: var(--pink); background: #fff5fa; }
+    .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .upload-icon { font-size: 3rem; margin-bottom: 1rem; display: block; }
+    .upload-zone h3 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.4rem; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .upload-zone p { color: #777; font-size: 0.95rem; }
+
+    /* PROCESSING */
+    #processing { display: none; text-align: center; padding: 3rem; border: 3px solid var(--black); margin-bottom: 2rem; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #eee; border-top-color: var(--pink); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1.5rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #processing p { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* VALIDATION */
+    .validation-box { padding: 1rem 1.5rem; margin-bottom: 1.5rem; border: 3px solid; font-size: 0.95rem; line-height: 1.6; }
+    .validation-box.ok { border-color: var(--mint); background: #f0fff8; }
+    .validation-box.warn { border-color: var(--orange); background: #fffaf0; }
+    .validation-box strong { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 0.3rem; }
+
+    /* SECTIONS */
+    .section-heading { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 1.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; }
+    .section-heading::after { content: ''; flex: 1; height: 3px; background: var(--yellow); }
+
+    /* EXCEPTIONS */
+    #exceptions-section { display: none; margin-bottom: 2rem; }
+    .exception-intro { background: #fffbea; border: 3px solid var(--yellow); padding: 1rem 1.5rem; margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.6; }
+    .exception-item { display: flex; align-items: center; gap: 1rem; padding: 0.8rem 1rem; border: 2px solid var(--black); margin-bottom: 0.5rem; flex-wrap: wrap; }
+    .exception-item:nth-child(odd) { background: #fafafa; }
+    .exception-date { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.9rem; color: #888; min-width: 70px; }
+    .exception-merchant { font-weight: 600; flex: 1; min-width: 160px; }
+    .exception-amount { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.1rem; min-width: 80px; text-align: right; }
+    .exception-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+    .btn-shared, .btn-yours { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; border: 2px solid var(--black); padding: 0.4rem 0.9rem; cursor: pointer; background: var(--white); transition: background 0.15s, color 0.15s; }
+    .btn-shared:hover { background: var(--mint); }
+    .btn-yours:hover { background: var(--pink); color: var(--white); }
+    .btn-shared.selected { background: var(--mint); }
+    .btn-yours.selected { background: var(--pink); color: var(--white); }
+    .remember-label { font-size: 0.82rem; color: #888; display: flex; align-items: center; gap: 0.35rem; cursor: pointer; user-select: none; }
+    .remember-label input { cursor: pointer; }
+
+    .btn-calculate { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; border: 3px solid var(--black); padding: 1rem 2.5rem; cursor: pointer; background: var(--black); color: var(--white); margin-top: 1.5rem; transition: background 0.15s, transform 0.1s, box-shadow 0.15s; }
+    .btn-calculate:hover { background: var(--pink); transform: translate(-3px, -3px); box-shadow: 5px 5px 0 var(--black); }
+    .btn-calculate:disabled { background: #ccc; border-color: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* RESULTS */
+    #results-section { display: none; margin-bottom: 3rem; }
+    .summary-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+    .summary-card { border: 3px solid var(--black); padding: 1.5rem; transition: transform 0.15s, box-shadow 0.15s; }
+    .summary-card:hover { transform: translate(-3px, -3px); box-shadow: 5px 5px 0 var(--black); }
+    .summary-card .accent { width: 36px; height: 5px; margin-bottom: 1rem; }
+    .summary-card .label { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; color: #777; margin-bottom: 0.4rem; }
+    .summary-card .amount { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 2.2rem; line-height: 1; }
+    .summary-card .sub { font-size: 0.85rem; color: #888; margin-top: 0.3rem; }
+    .card--mint .accent { background: var(--mint); }
+    .card--pink .accent { background: var(--pink); }
+    .card--orange .accent { background: var(--orange); }
+    .card--yellow .accent { background: var(--yellow); }
+
+    /* TABLE */
+    .table-controls { display: flex; gap: 0.8rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+    .filter-btn { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; border: 2px solid var(--black); padding: 0.4rem 1rem; cursor: pointer; background: var(--white); transition: background 0.15s; }
+    .filter-btn.active { background: var(--black); color: var(--white); }
+    .filter-btn:hover:not(.active) { background: #f0f0f0; }
+    .action-btn { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; border: 2px solid var(--black); padding: 0.4rem 1.1rem; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; }
+    .action-btn:hover { transform: translate(-2px, -2px); box-shadow: 3px 3px 0 var(--black); }
+    .btn-csv { background: var(--mint); color: var(--black); }
+    .btn-export { background: var(--yellow); color: var(--black); }
+    .learned-badge { font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; color: #888; margin-left: auto; }
+
+    .tx-table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; background: var(--black); color: var(--white); padding: 0.8rem 1rem; text-align: left; }
+    td { padding: 0.65rem 1rem; border-bottom: 1px solid #e5e5e5; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr.shared-row { background: #f0fff8; }
+    tr.yours-row { background: #fff0f8; }
+    tr.credit-row { opacity: 0.65; font-style: italic; }
+    .badge { display: inline-block; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; padding: 0.2rem 0.6rem; border: 2px solid currentColor; }
+    .badge-shared { color: #00a060; background: #e6fff3; }
+    .badge-yours { color: var(--pink); background: #fff0f8; }
+    .amount-col { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1rem; }
+    .credit-amount { color: #00a060; }
+
+    /* MEMORY PANEL */
+    .memory-panel { border: 2px solid #ddd; padding: 1.2rem 1.5rem; margin-top: 2.5rem; }
+    .memory-panel h4 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.6rem; }
+    .memory-panel p { font-size: 0.88rem; color: #666; line-height: 1.6; margin-bottom: 1rem; }
+    .memory-actions { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+    .btn-clear { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; border: 2px solid #ccc; padding: 0.4rem 1rem; cursor: pointer; background: var(--white); color: #999; transition: border-color 0.15s, color 0.15s; }
+    .btn-clear:hover { border-color: var(--pink); color: var(--pink); }
+
+    /* MISC */
+    .error-box { display: none; border: 3px solid var(--pink); background: #fff0f8; padding: 1rem 1.5rem; margin-bottom: 1.5rem; font-size: 0.95rem; }
+    .btn-reset { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; border: 2px solid #ccc; padding: 0.6rem 1.5rem; cursor: pointer; background: var(--white); color: #777; margin-top: 3rem; transition: border-color 0.15s, color 0.15s; display: block; }
+    .btn-reset:hover { border-color: var(--black); color: var(--black); }
+
+    /* FOOTER */
+    footer { background: var(--black); color: #888; text-align: center; padding: 1.5rem 2rem; font-size: 0.85rem; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1px; text-transform: uppercase; }
+    footer span { color: var(--pink); }
+    .footer-social { display: flex; justify-content: center; align-items: center; gap: 2rem; margin-bottom: 1.2rem; }
+    .footer-social a { color: var(--mint); display: flex; align-items: center; transition: color 0.2s, transform 0.2s; }
+    .footer-social a:hover { color: var(--white); transform: translateY(-3px); }
+    .footer-social svg { width: 28px; height: 28px; fill: currentColor; }
+  </style>
+</head>
+<body>
+
+<header>
+  <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  <a href="index.html" class="site-title">anarkid<span>.xyz</span></a>
+</header>
+
+<nav>
+  <div class="nav-links" id="nav-links">
+    <a href="index.html">Home</a>
+    <a href="about.html">About Me</a>
+    <a href="running-coaching.html">Running Coaching</a>
+    <a href="irl-creations.html">IRL Creations</a>
+    <a href="projects.html" class="active">Projects</a>
+  </div>
+</nav>
+
+<main>
+  <p class="page-label">Tools</p>
+  <h1 class="page-title">Statement Splitter</h1>
+  <p class="page-desc">Upload a Barclaycard PDF statement. The tool categorises every transaction as 🏠 Shared or 👤 Yours, asks you about anything it's not sure of, then calculates who owes what.</p>
+
+  <div class="rules-status" id="rules-status">Loading categorisation rules…</div>
+  <div class="error-box" id="error-box"></div>
+
+  <div class="upload-zone" id="upload-zone">
+    <input type="file" id="file-input" accept=".pdf" />
+    <span class="upload-icon">📄</span>
+    <h3>Drop your statement here</h3>
+    <p>Barclaycard PDF statements only &mdash; or click to browse</p>
+  </div>
+
+  <div id="processing">
+    <div class="spinner"></div>
+    <p id="processing-msg">Reading statement…</p>
+  </div>
+
+  <div id="validation-area"></div>
+
+  <div id="exceptions-section">
+    <h2 class="section-heading">Needs your input</h2>
+    <div class="exception-intro" id="exception-intro"></div>
+    <div id="exceptions-list"></div>
+    <button class="btn-calculate" id="btn-calculate" disabled>Calculate totals</button>
+  </div>
+
+  <div id="results-section">
+    <h2 class="section-heading">Results</h2>
+    <div class="summary-cards" id="summary-cards"></div>
+
+    <h2 class="section-heading">All Transactions</h2>
+    <div class="table-controls">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="shared">🏠 Shared</button>
+      <button class="filter-btn" data-filter="yours">👤 Yours</button>
+      <button class="action-btn btn-csv" id="download-csv">⬇ CSV</button>
+      <button class="action-btn btn-export" id="export-rules">⬇ Export rules</button>
+      <span class="learned-badge" id="learned-badge"></span>
+    </div>
+    <div class="tx-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Merchant</th>
+            <th>Category</th>
+            <th style="text-align:right">Amount</th>
+          </tr>
+        </thead>
+        <tbody id="tx-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="memory-panel">
+      <h4>🧠 Browser Memory</h4>
+      <p>Decisions you made for unknown vendors are saved in this browser and remembered next time. Use <strong>Export rules</strong> above to download an updated JSON file — replace <code>statement-splitter-rules.json</code> in your GitHub repo to make new rules permanent across all devices.</p>
+      <div class="memory-actions">
+        <button class="action-btn btn-export" id="export-rules-2">⬇ Export rules</button>
+        <button class="btn-clear" id="btn-clear-memory">🗑 Clear learned rules</button>
+      </div>
+    </div>
+
+    <button class="btn-reset" id="btn-reset">↩ Start over</button>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-social">
+    <a href="https://bsky.app/profile/anarkid.bsky.social" target="_blank" rel="noopener" aria-label="Bluesky">
+      <svg viewBox="0 0 600 530"><path d="m135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.795 0 17.712-10.155 148.79-16.111 170.07-20.703 73.984-96.144 92.854-163.25 81.433 117.3 19.964 147.14 86.092 82.697 152.22-122.39 125.59-175.91-31.511-189.63-71.766-2.514-7.3797-3.6904-10.832-3.7077-7.8964-0.0174-2.9357-1.1937 0.51669-3.7077 7.8964-13.714 40.255-67.233 197.36-189.63 71.766-64.444-66.128-34.605-132.26 82.697-152.22-67.108 11.421-142.55-7.4491-163.25-81.433-5.9562-21.282-16.111-152.36-16.111-170.07 0-88.687 77.742-60.816 125.72-24.795z"/></svg>
+    </a>
+    <a href="https://www.strava.com/athletes/11624652" target="_blank" rel="noopener" aria-label="Strava">
+      <svg viewBox="0 0 24 24"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0 4 13.828h4.172"/></svg>
+    </a>
+    <a href="mailto:ted@anarkid.xyz" aria-label="Email">
+      <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+    </a>
+  </div>
+  <span>anarkid.xyz</span> &mdash; built from scratch
+</footer>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let RULES = null;
+let learnedRules = {};
+let allTransactions = [];
+let exceptions = [];
+let exceptionDecisions = {};
+
+const STORAGE_KEY = 'statement_splitter_learned_v1';
+
+// ─────────────────────────────────────────────
+// LOCALSTORAGE — learned rules
+// ─────────────────────────────────────────────
+function loadLearned() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    learnedRules = raw ? JSON.parse(raw) : {};
+  } catch(e) { learnedRules = {}; }
+}
+
+function saveLearned() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(learnedRules)); } catch(e) {}
+}
+
+function learnedKey(merchant) {
+  return merchant.toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
+function lookupLearned(merchant) {
+  return learnedRules[learnedKey(merchant)] || null;
+}
+
+function rememberDecision(merchant, category) {
+  learnedRules[learnedKey(merchant)] = category;
+  saveLearned();
+}
+
+// ─────────────────────────────────────────────
+// LOAD RULES JSON
+// ─────────────────────────────────────────────
+async function loadRules() {
+  const el = document.getElementById('rules-status');
+  try {
+    const resp = await fetch('statement-splitter-rules.json');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    RULES = await resp.json();
+    const lc = Object.keys(learnedRules).length;
+    el.textContent = `✓ Rules loaded.${lc > 0 ? ` ${lc} learned rule${lc !== 1 ? 's' : ''} in browser memory.` : ''}`;
+  } catch(e) {
+    RULES = null;
+    el.textContent = '⚠ Could not load rules file. Make sure statement-splitter-rules.json is in the same GitHub Pages folder as this file.';
+    el.classList.add('warn');
+  }
+}
+
+// ─────────────────────────────────────────────
+// CATEGORISE
+// ─────────────────────────────────────────────
+function categorise(merchant, amount) {
+  const m = merchant.toLowerCase().trim();
+  const amt = Math.abs(amount);
+
+  // 1. Learned rules take priority
+  const learned = lookupLearned(merchant);
+  if (learned) return learned;
+
+  if (!RULES) return null;
+
+  // 2. Pattern rules
+  for (const rule of RULES.patternRules) {
+    if (new RegExp(rule.pattern, 'i').test(m)) return rule.category;
+  }
+
+  // 3. Vendor groups (all sections)
+  for (const group of Object.values(RULES.vendors)) {
+    for (const v of group) {
+      try {
+        if (new RegExp(v.match, 'i').test(m)) {
+          if (v.category === 'threshold') return amt >= v.threshold ? 'shared' : 'yours';
+          return v.category;
+        }
+      } catch(e) { /* skip bad regex */ }
+    }
+  }
+
+  // 4. Apple — exact amount matching
+  if (/apple\.com/i.test(m)) {
+    if (RULES.appleRules.shared.includes(amt)) return 'shared';
+    if (RULES.appleRules.yours.includes(amt)) return 'yours';
+    return null; // unknown Apple charge → exception
+  }
+
+  // 5. Foreign transactions
+  if (/eur|€|foreign|austria|innsbruck|munich/i.test(m)) {
+    return RULES.foreignTransactions ? RULES.foreignTransactions.category : 'shared';
+  }
+
+  return null; // exception
+}
+
+// ─────────────────────────────────────────────
+// PDF PARSING
+// ─────────────────────────────────────────────
+async function parsePDF(file) {
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  let text = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(item => item.str).join(' ') + '\n';
+  }
+  return text;
+}
+
+function extractStatementTotal(text) {
+  // Look for "Your new activity £X,XXX.XX" on the statement
+  const patterns = [
+    /your new activity\s*[:\s]+£([\d,]+\.\d{2})/i,
+    /new activity\s+£([\d,]+\.\d{2})/i,
+    /total new activity\s+£([\d,]+\.\d{2})/i,
+  ];
+  for (const p of patterns) {
+    const m = text.match(p);
+    if (m) return parseFloat(m[1].replace(/,/g, ''));
+  }
+  return null;
+}
+
+function extractTransactions(text) {
+  const transactions = [];
+  const cleaned = text.replace(/\s+/g, ' ');
+
+  // Match ref 009 transactions: DD Mon 009 MERCHANT [e] £amount[CR]
+  const txPattern = /(\d{2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))\s+009\s+([\w\s\*\.\-\/\,\'\&\(\)]+?)\s+(?:e\s+)?£([\d,]+\.\d{2})(CR)?(?=\s|$)/g;
+
+  let match;
+  while ((match = txPattern.exec(cleaned)) !== null) {
+    const date = match[1].trim();
+    let merchant = match[2].trim().replace(/,\s*[A-Z][a-z].*$/, '').replace(/\s+e$/, '').trim();
+    const amount = parseFloat(match[3].replace(/,/g, ''));
+    const isCredit = !!match[4];
+
+    if (/payment by direct debit/i.test(merchant)) continue;
+
+    transactions.push({
+      date,
+      merchant,
+      amount: isCredit ? -amount : amount,
+      isCredit
+    });
+  }
+
+  return transactions;
+}
+
+// ─────────────────────────────────────────────
+// VALIDATION
+// ─────────────────────────────────────────────
+function showValidation(statementTotal, transactions) {
+  const area = document.getElementById('validation-area');
+  if (statementTotal === null) {
+    area.innerHTML = `<div class="validation-box warn"><strong>ℹ Could not find statement total</strong>Couldn't extract a "new activity" total from the PDF to verify against. Check the transaction count looks right.</div>`;
+    return;
+  }
+
+  const foundTotal = transactions
+    .filter(tx => tx.amount > 0)
+    .reduce((sum, tx) => sum + tx.amount, 0);
+
+  const diff = Math.abs(foundTotal - statementTotal);
+  const ok = diff < 0.10;
+
+  if (ok) {
+    area.innerHTML = `<div class="validation-box ok"><strong>✓ Statement checks out</strong>Found ${transactions.length} transactions totalling £${foundTotal.toFixed(2)}, matching the statement total of £${statementTotal.toFixed(2)}.</div>`;
+  } else {
+    area.innerHTML = `<div class="validation-box warn"><strong>⚠ Totals don't match</strong>Found ${transactions.length} transactions totalling £${foundTotal.toFixed(2)}, but the statement shows £${statementTotal.toFixed(2)} (difference: £${diff.toFixed(2)}). Some transactions may have been missed — check the table carefully.</div>`;
+  }
+}
+
+// ─────────────────────────────────────────────
+// EXCEPTIONS UI
+// ─────────────────────────────────────────────
+function buildExceptions() {
+  const section = document.getElementById('exceptions-section');
+  const list = document.getElementById('exceptions-list');
+  const calcBtn = document.getElementById('btn-calculate');
+
+  if (exceptions.length === 0) { showResults(); return; }
+
+  section.style.display = 'block';
+  document.getElementById('exception-intro').innerHTML =
+    `<strong>${exceptions.length} transaction${exceptions.length !== 1 ? 's' : ''} need classifying.</strong> The tool couldn't automatically categorise these. Tick "remember" to save your decision for next time — it'll be applied automatically in future statements.`;
+
+  list.innerHTML = '';
+  exceptionDecisions = {};
+
+  exceptions.forEach((tx, i) => {
+    const div = document.createElement('div');
+    div.className = 'exception-item';
+    div.innerHTML = `
+      <span class="exception-date">${tx.date}</span>
+      <span class="exception-merchant">${tx.merchant}</span>
+      <span class="exception-amount${tx.amount < 0 ? ' credit-amount' : ''}">£${Math.abs(tx.amount).toFixed(2)}${tx.isCredit ? ' CR' : ''}</span>
+      <div class="exception-btns">
+        <button class="btn-shared" data-idx="${i}">🏠 Shared</button>
+        <button class="btn-yours" data-idx="${i}">👤 Yours</button>
+        <label class="remember-label"><input type="checkbox" class="remember-cb" data-idx="${i}" checked> remember</label>
+      </div>`;
+    list.appendChild(div);
+  });
+
+  list.addEventListener('click', e => {
+    const btn = e.target.closest('.btn-shared, .btn-yours');
+    if (!btn) return;
+    const idx = parseInt(btn.dataset.idx);
+    exceptionDecisions[idx] = btn.classList.contains('btn-shared') ? 'shared' : 'yours';
+    btn.closest('.exception-item').querySelectorAll('.btn-shared,.btn-yours').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    if (Object.keys(exceptionDecisions).length === exceptions.length) calcBtn.disabled = false;
+  });
+}
+
+// ─────────────────────────────────────────────
+// RESULTS
+// ─────────────────────────────────────────────
+function showResults() {
+  // Apply exception decisions and optionally save to memory
+  exceptions.forEach((tx, i) => {
+    const decision = exceptionDecisions[i];
+    if (!decision) return;
+    tx.category = decision;
+    const cb = document.querySelector(`.remember-cb[data-idx="${i}"]`);
+    if (!cb || cb.checked) rememberDecision(tx.merchant, decision);
+  });
+
+  // Totals
+  let sharedTotal = 0, yoursTotal = 0;
+  allTransactions.forEach(tx => {
+    if (tx.category === 'shared') sharedTotal += tx.amount;
+    else yoursTotal += tx.amount;
+  });
+  sharedTotal = Math.max(0, sharedTotal);
+  yoursTotal = Math.max(0, yoursTotal);
+
+  const kimOwes = sharedTotal / 2;
+  const tedOwes = (sharedTotal / 2) + yoursTotal;
+
+  // Summary cards
+  document.getElementById('summary-cards').innerHTML = `
+    <div class="summary-card card--mint"><div class="accent"></div><div class="label">Total Shared</div><div class="amount">£${sharedTotal.toFixed(2)}</div><div class="sub">Split 50/50</div></div>
+    <div class="summary-card card--pink"><div class="accent"></div><div class="label">Total Yours</div><div class="amount">£${yoursTotal.toFixed(2)}</div><div class="sub">Ted only</div></div>
+    <div class="summary-card card--orange"><div class="accent"></div><div class="label">💳 Kim Owes</div><div class="amount">£${kimOwes.toFixed(2)}</div><div class="sub">Shared ÷ 2</div></div>
+    <div class="summary-card card--yellow"><div class="accent"></div><div class="label">💳 Ted Owes</div><div class="amount">£${tedOwes.toFixed(2)}</div><div class="sub">(Shared ÷ 2) + Yours</div></div>
+  `;
+
+  // Transaction table
+  const tbody = document.getElementById('tx-tbody');
+  tbody.innerHTML = '';
+  allTransactions.forEach(tx => {
+    const tr = document.createElement('tr');
+    tr.className = tx.amount < 0 ? 'credit-row' : (tx.category === 'shared' ? 'shared-row' : 'yours-row');
+    tr.dataset.category = tx.category;
+    tr.innerHTML = `
+      <td>${tx.date}</td>
+      <td>${tx.merchant}</td>
+      <td><span class="badge ${tx.category === 'shared' ? 'badge-shared' : 'badge-yours'}">${tx.category === 'shared' ? '🏠 Shared' : '👤 Yours'}</span></td>
+      <td class="amount-col${tx.amount < 0 ? ' credit-amount' : ''}" style="text-align:right">£${Math.abs(tx.amount).toFixed(2)}${tx.isCredit ? ' CR' : ''}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  const lc = Object.keys(learnedRules).length;
+  document.getElementById('learned-badge').textContent = lc > 0 ? `${lc} rule${lc !== 1 ? 's' : ''} in browser memory` : '';
+
+  document.getElementById('results-section').style.display = 'block';
+  document.getElementById('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  window._finalTx = allTransactions;
+}
+
+// ─────────────────────────────────────────────
+// EXPORT RULES JSON
+// ─────────────────────────────────────────────
+function exportRules() {
+  if (!RULES) { alert('Rules file not loaded — nothing to export.'); return; }
+  const exportData = JSON.parse(JSON.stringify(RULES));
+  const learnedEntries = Object.entries(learnedRules);
+  if (learnedEntries.length > 0) {
+    exportData.vendors.learnedFromBrowser = learnedEntries.map(([merchant, category]) => ({
+      match: merchant.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+      category,
+      note: 'Learned from browser'
+    }));
+  }
+  exportData._exportedAt = new Date().toISOString();
+  exportData._learnedRulesCount = learnedEntries.length;
+
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'statement-splitter-rules.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─────────────────────────────────────────────
+// EVENTS
+// ─────────────────────────────────────────────
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = btn.dataset.filter;
+    document.querySelectorAll('#tx-tbody tr').forEach(row => {
+      row.style.display = (f === 'all' || row.dataset.category === f) ? '' : 'none';
+    });
+  });
+});
+
+document.getElementById('download-csv').addEventListener('click', () => {
+  const tx = window._finalTx; if (!tx) return;
+  const rows = [['Date','Merchant','Category','Amount','Credit']];
+  tx.forEach(t => rows.push([t.date, `"${t.merchant.replace(/"/g,'""')}"`, t.category, Math.abs(t.amount).toFixed(2), t.isCredit ? 'CR' : '']));
+  const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'statement-split.csv'; a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('export-rules').addEventListener('click', exportRules);
+document.getElementById('export-rules-2').addEventListener('click', exportRules);
+
+document.getElementById('btn-clear-memory').addEventListener('click', () => {
+  if (confirm('Clear all learned rules from this browser? This cannot be undone.')) {
+    learnedRules = {};
+    localStorage.removeItem(STORAGE_KEY);
+    document.getElementById('learned-badge').textContent = '';
+    document.getElementById('rules-status').textContent = '✓ Rules loaded. No learned rules in browser memory.';
+  }
+});
+
+document.getElementById('btn-calculate').addEventListener('click', () => {
+  document.getElementById('exceptions-section').style.display = 'none';
+  showResults();
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  allTransactions = []; exceptions = []; exceptionDecisions = {}; window._finalTx = null;
+  document.getElementById('results-section').style.display = 'none';
+  document.getElementById('exceptions-section').style.display = 'none';
+  document.getElementById('validation-area').innerHTML = '';
+  document.getElementById('upload-zone').style.display = 'block';
+  document.getElementById('file-input').value = '';
+  document.getElementById('error-box').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ─────────────────────────────────────────────
+// MAIN FLOW
+// ─────────────────────────────────────────────
+async function processFile(file) {
+  document.getElementById('error-box').style.display = 'none';
+  document.getElementById('upload-zone').style.display = 'none';
+  document.getElementById('processing').style.display = 'block';
+  document.getElementById('processing-msg').textContent = 'Reading statement…';
+
+  try {
+    const text = await parsePDF(file);
+    document.getElementById('processing-msg').textContent = 'Categorising transactions…';
+
+    const statementTotal = extractStatementTotal(text);
+    const rawTx = extractTransactions(text);
+
+    if (rawTx.length === 0) throw new Error('No transactions found. Make sure this is a Barclaycard PDF statement.');
+
+    allTransactions = rawTx.map(tx => ({ ...tx, category: categorise(tx.merchant, tx.amount) }));
+    exceptions = allTransactions.filter(tx => tx.category === null);
+
+    document.getElementById('processing').style.display = 'none';
+    showValidation(statementTotal, allTransactions);
+
+    if (exceptions.length > 0) buildExceptions();
+    else showResults();
+
+  } catch(err) {
+    document.getElementById('processing').style.display = 'none';
+    document.getElementById('upload-zone').style.display = 'block';
+    const eb = document.getElementById('error-box');
+    eb.style.display = 'block';
+    eb.textContent = 'Error: ' + err.message;
+    console.error(err);
+  }
+}
+
+// File events
+const fileInput = document.getElementById('file-input');
+const uploadZone = document.getElementById('upload-zone');
+fileInput.addEventListener('change', e => { if (e.target.files[0]) processFile(e.target.files[0]); });
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault(); uploadZone.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type === 'application/pdf') processFile(f);
+  else { const eb = document.getElementById('error-box'); eb.style.display = 'block'; eb.textContent = 'Please drop a PDF file.'; }
+});
+
+// Nav
+document.getElementById('hamburger').addEventListener('click', () => {
+  document.getElementById('hamburger').classList.toggle('open');
+  document.getElementById('nav-links').classList.toggle('open');
+});
+
+// Init
+loadLearned();
+loadRules();
+</script>
+</body>
+</html>

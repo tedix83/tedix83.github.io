@@ -1,0 +1,217 @@
+{
+  "_comment": "Statement Splitter categorisation rules. Edit this file to add or change vendor rules, then push to GitHub to make changes permanent. The tool also learns from your exception decisions via browser localStorage — use the Export button to download an updated copy of this file with learned rules baked in.",
+
+  "patternRules": [
+    { "pattern": "hotel|travelodge|premier inn|lodge", "category": "shared", "note": "Hotels" },
+    { "pattern": "motorway|moto |welcome break|gloucester services", "category": "shared", "note": "Motorway stops" },
+    { "pattern": "vend(ing|i)", "category": "yours", "note": "Vending machines" },
+    { "pattern": "showcase", "category": "yours", "note": "Showcase Avonmeads cinema" },
+    { "pattern": "cinema|odeon|vue |cineworld", "category": "yours", "note": "Other cinemas" },
+    { "pattern": "m6toll|toll", "category": "shared", "note": "Road tolls" },
+    { "pattern": "leisure centre", "category": "shared", "note": "Leisure centres" },
+    { "pattern": "parking|car park", "category": "shared", "note": "Parking" }
+  ],
+
+  "vendors": {
+
+    "supermarkets": [
+      { "match": "sainsbury", "category": "threshold", "threshold": 10 },
+      { "match": "waitrose", "category": "threshold", "threshold": 10 },
+      { "match": "marks.spencer|m\\.s simply food|m&s bristol|m&s ", "category": "threshold", "threshold": 10 },
+      { "match": "tesco", "category": "shared", "note": "Always shared, incl Tesco PFS petrol" },
+      { "match": "co.op|co-op|southern co-op", "category": "threshold", "threshold": 15 },
+      { "match": "morrisons", "category": "yours", "note": "Morrisons Daily — always yours" },
+      { "match": "asda", "category": "threshold", "threshold": 10 }
+    ],
+
+    "foodSpecialists": [
+      { "match": "wai yee hong", "category": "shared" },
+      { "match": "konbini", "category": "shared" },
+      { "match": "dragons delicacy", "category": "shared" },
+      { "match": "seoul.s mart", "category": "shared" },
+      { "match": "pan asia", "category": "shared" },
+      { "match": "ji chicken", "category": "shared" },
+      { "match": "prime by pasture", "category": "shared" },
+      { "match": "meatbox", "category": "shared" },
+      { "match": "tooty fruity", "category": "shared" },
+      { "match": "fish society", "category": "shared" },
+      { "match": "bath soft cheese", "category": "shared" },
+      { "match": "oldfield.s fish|crispins fish", "category": "shared" },
+      { "match": "philip morris and son", "category": "shared", "note": "Wine merchant" }
+    ],
+
+    "takeaway": [
+      { "match": "just eat", "category": "shared" },
+      { "match": "popeyes", "category": "shared" },
+      { "match": "mcdonalds", "category": "yours" },
+      { "match": "five guys", "category": "yours" },
+      { "match": "greggs", "category": "yours" }
+    ],
+
+    "restaurants": [
+      { "match": "fat rice", "category": "shared" },
+      { "match": "scrandit", "category": "shared" },
+      { "match": "nihow", "category": "shared" },
+      { "match": "langyu", "category": "shared" },
+      { "match": "crafty beans", "category": "shared" },
+      { "match": "168 oriental", "category": "shared" },
+      { "match": "annyeong", "category": "shared" },
+      { "match": "oriental bistro", "category": "shared" },
+      { "match": "j2w food", "category": "shared" },
+      { "match": "niji sushi", "category": "shared" },
+      { "match": "west coast pizza", "category": "shared" },
+      { "match": "gigi", "category": "shared" },
+      { "match": "tamarind", "category": "shared" },
+      { "match": "alta loma", "category": "shared" },
+      { "match": "passion and soul", "category": "shared" },
+      { "match": "nala", "category": "shared" },
+      { "match": "red tiger", "category": "shared" },
+      { "match": "bray restauran", "category": "shared" },
+      { "match": "dark matters", "category": "shared" },
+      { "match": "taylors bagels", "category": "shared" },
+      { "match": "rockfish", "category": "shared" },
+      { "match": "the pier", "category": "shared" },
+      { "match": "waverley", "category": "shared" },
+      { "match": "bathrd", "category": "shared" },
+      { "match": "willsbridge", "category": "shared" },
+      { "match": "avon valley", "category": "shared" },
+      { "match": "haunts curiosit", "category": "shared" },
+      { "match": "tea people", "category": "shared" },
+      { "match": "initial aspiration", "category": "shared" }
+    ],
+
+    "cafes": [
+      { "match": "fresh line|lime tree bath|herberts cafe", "category": "yours", "note": "Work lunches — always yours" },
+      { "match": "cafe|coffee|bakery|costa|caffe|patisserie|brasserie|bistro", "category": "threshold", "threshold": 10, "note": "Unknown cafes — shared if >=£10" }
+    ],
+
+    "pubsBars": [
+      { "match": "bonzo lounge", "category": "shared" },
+      { "match": "jolly postboy", "category": "shared" },
+      { "match": "bedford pub", "category": "shared" },
+      { "match": "6 o.clock gin", "category": "shared" },
+      { "match": "old lock", "category": "yours" },
+      { "match": "supreme sports", "category": "yours" },
+      { "match": "loungers", "category": "yours" }
+    ],
+
+    "household": [
+      { "match": "ikea", "category": "shared" },
+      { "match": "dunelm", "category": "shared" },
+      { "match": "lakeland", "category": "shared" },
+      { "match": "john lewis", "category": "shared" },
+      { "match": "procook", "category": "shared" },
+      { "match": "b.q|b&q", "category": "shared" },
+      { "match": "halfords", "category": "shared" },
+      { "match": "fonthill garden", "category": "shared" },
+      { "match": "recyclingbins", "category": "shared" },
+      { "match": "brabantia", "category": "shared" },
+      { "match": "lightbulbs", "category": "shared" },
+      { "match": "wayfair|wf \\*uk", "category": "shared" },
+      { "match": "charlton jenrick", "category": "shared" },
+      { "match": "who gives a crap", "category": "shared" },
+      { "match": "waves hand car wash", "category": "shared" },
+      { "match": "green man bristol", "category": "shared" },
+      { "match": "flower shop", "category": "shared" },
+      { "match": "heat geek", "category": "shared" },
+      { "match": "currys", "category": "shared" }
+    ],
+
+    "utilities": [
+      { "match": "certas|certasenergy", "category": "shared", "note": "Oil heating" },
+      { "match": "ohme", "category": "shared", "note": "Home EV charger" },
+      { "match": "south glos internet", "category": "shared" },
+      { "match": "vodafone", "category": "shared" },
+      { "match": "which limited|which\\?", "category": "shared" }
+    ],
+
+    "evCharging": [
+      { "match": "smart charge", "category": "shared" },
+      { "match": "shell ev", "category": "shared" },
+      { "match": "gridserve", "category": "shared" },
+      { "match": "applegreen electric", "category": "shared" },
+      { "match": "bp chargemaster", "category": "shared" }
+    ],
+
+    "parking": [
+      { "match": "mipermit", "category": "shared" },
+      { "match": "ringo", "category": "shared" },
+      { "match": "ncp limited", "category": "shared" },
+      { "match": "park with ease|parkwithease", "category": "shared" },
+      { "match": "north bristol nhs", "category": "shared" },
+      { "match": "bristol city council", "category": "shared" },
+      { "match": "bath and nort", "category": "shared" }
+    ],
+
+    "health": [
+      { "match": "boots", "category": "shared" },
+      { "match": "post office", "category": "shared" },
+      { "match": "holland.*barrett", "category": "yours" },
+      { "match": "pharmacy|apotheke", "category": "shared" }
+    ],
+
+    "pets": [
+      { "match": "pets at home", "category": "shared" },
+      { "match": "jollyes", "category": "shared" },
+      { "match": "bristol animal rescue", "category": "shared" }
+    ],
+
+    "travelShared": [
+      { "match": "trainline", "category": "shared" },
+      { "match": "heathrow airport", "category": "shared" },
+      { "match": "admiral travel", "category": "shared" },
+      { "match": "bristol airport", "category": "shared" },
+      { "match": "dart marina", "category": "shared" },
+      { "match": "mollies motel", "category": "shared" },
+      { "match": "stock exchange hotel", "category": "shared" },
+      { "match": "dartmouth|castle ferry", "category": "shared" },
+      { "match": "london roller derby", "category": "shared" },
+      { "match": "ticketmaster", "category": "shared" },
+      { "match": "bathrd weekende", "category": "shared" }
+    ],
+
+    "travelYours": [
+      { "match": "transport for wales", "category": "yours" },
+      { "match": "tfl ", "category": "yours" },
+      { "match": "first west of england", "category": "yours" }
+    ],
+
+    "entertainment": [
+      { "match": "fabricland", "category": "yours" },
+      { "match": "guthrie ghani", "category": "yours" },
+      { "match": "scribbler", "category": "yours" },
+      { "match": "etsy", "category": "yours" }
+    ],
+
+    "subscriptions": [
+      { "match": "monthly membership fee", "category": "shared", "note": "£20 Barclaycard monthly fee" },
+      { "match": "substack|wired.*sub", "category": "yours" },
+      { "match": "godaddy", "category": "yours" }
+    ],
+
+    "personal": [
+      { "match": "oldland conv", "category": "yours" },
+      { "match": "gen register office", "category": "yours" },
+      { "match": "ljp performance", "category": "yours" },
+      { "match": "esme walton", "category": "yours" },
+      { "match": "gosport", "category": "yours" },
+      { "match": "wycombe leisure", "category": "yours" }
+    ],
+
+    "petrol": [
+      { "match": "^bristol$", "category": "shared", "note": "Unidentified Bristol petrol purchase" }
+    ]
+
+  },
+
+  "appleRules": {
+    "note": "Apple charges matched by exact £ amount. Unknown Apple amounts are flagged as exceptions.",
+    "shared": [7.49, 18.49, 24.99, 34.99, 39.99, 49.99, 54.99, 79.99, 89.99],
+    "yours":  [2.99, 4.99, 5.99, 7.99, 8.99, 9.99, 14.99, 19.99, 29.99, 31.99]
+  },
+
+  "foreignTransactions": {
+    "category": "shared",
+    "note": "All foreign currency / overseas transactions treated as shared holiday spend"
+  }
+}
