@@ -254,20 +254,15 @@
     `;
   }
 
-  /* ── INJECT HEADER ──────────────────────────────────────── */
-  const headerSlot = document.getElementById('site-header');
-  if (headerSlot) {
-    headerSlot.outerHTML = buildHeader();
-  }
-
-  /* ── INJECT FOOTER ──────────────────────────────────────── */
-  const footerSlot = document.getElementById('site-footer');
-  if (footerSlot) {
-    footerSlot.outerHTML = buildFooter();
-  }
-
-  /* ── HAMBURGER MENU ─────────────────────────────────────── */
+  /* ── INJECT + HAMBURGER (once DOM is ready) ────────────── */
   document.addEventListener('DOMContentLoaded', function () {
+
+    const headerSlot = document.getElementById('site-header');
+    if (headerSlot) headerSlot.outerHTML = buildHeader();
+
+    const footerSlot = document.getElementById('site-footer');
+    if (footerSlot) footerSlot.outerHTML = buildFooter();
+
     const btn = document.getElementById('hamburger');
     const menu = document.getElementById('nav-links');
     if (btn && menu) {
@@ -276,6 +271,7 @@
         menu.classList.toggle('open');
       });
     }
+
   });
 
 })();
