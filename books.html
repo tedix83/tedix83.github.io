@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reading List — anarkid.xyz</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+  <script>const ACTIVE_PAGE = 'books';</script>
+  <script src="components.js"></script>
+  <style>
+    body { display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      padding: 4rem 2rem 2rem;
+      border-bottom: 3px solid var(--black);
+      max-width: 860px;
+    }
+    .page-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--orange);
+      background: var(--black);
+      display: inline-block;
+      padding: 0.3rem 0.8rem;
+      margin-bottom: 1rem;
+    }
+    .page-header h1 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      line-height: 1.05;
+    }
+    .page-header p {
+      margin-top: 1rem;
+      color: #444;
+      line-height: 1.7;
+      max-width: 600px;
+    }
+
+    /* ── CONTENT ── */
+    .content {
+      padding: 3rem 2rem 5rem;
+      max-width: 860px;
+      flex: 1;
+    }
+
+    /* ── STATUS ── */
+    .status-msg {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 0.8rem 1.2rem;
+      border: 2px solid var(--black);
+      background: #f5f5f5;
+      color: #555;
+    }
+    .status-msg.error {
+      background: #fff0f5;
+      color: var(--pink);
+      border-color: var(--pink);
+    }
+
+    /* ── BOOK TOTAL ── */
+    .book-total {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #888;
+      margin-bottom: 2rem;
+    }
+    .book-total strong {
+      color: var(--black);
+      font-size: 1.1rem;
+    }
+
+    /* ── YEAR ACCORDION ── */
+    .year-block {
+      border: 3px solid var(--black);
+      margin-bottom: 1rem;
+    }
+
+    .year-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 1.5rem;
+      background: var(--black);
+      color: var(--white);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+      gap: 1rem;
+    }
+    .year-header:hover { background: #222; }
+
+    .year-header-left {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+    }
+
+    .year-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 1.8rem;
+      line-height: 1;
+    }
+
+    .year-count {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #888;
+    }
+
+    .year-toggle {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 1.6rem;
+      line-height: 1;
+      color: var(--yellow);
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    .year-block.open .year-toggle {
+      transform: rotate(45deg);
+    }
+
+    /* ── BOOK LIST ── */
+    .book-list {
+      display: none;
+    }
+    .year-block.open .book-list {
+      display: block;
+    }
+
+    .book-item {
+      border-top: 2px solid #e5e5e5;
+      padding: 1.1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      transition: background 0.1s;
+    }
+    .book-item:hover { background: #fafafa; }
+
+    .book-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 1.15rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      line-height: 1.2;
+    }
+
+    .book-author {
+      font-size: 0.9rem;
+      color: #555;
+      margin-top: 0.2rem;
+    }
+
+    .book-date {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #aaa;
+      flex-shrink: 0;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="site-header"></div>
+
+  <main>
+    <div class="page-header">
+      <div class="page-label">Reading</div>
+      <h1>Books I've Read</h1>
+      <p>A log of every book I've finished, pulled live from my reading list. Click a year to expand it.</p>
+    </div>
+
+    <div class="content">
+      <div id="books-container">
+        <div class="status-msg" id="status">Loading reading list…</div>
+      </div>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script>
+  const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR8l8EcAHllrtgvXlSht_beEAcDod4xvjdIxLDGbOkUkmtIRMi92plUwLOhCje1nAHXdEI7g0ZP21OA/pub?gid=964996905&single=true&output=csv';
+
+  // ── CSV PARSER ──────────────────────────────────────────────
+  function parseCSV(text) {
+    const rows = [];
+    const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      const cells = [];
+      let cur = '', inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          if (inQ && line[i + 1] === '"') { cur += '"'; i++; }
+          else inQ = !inQ;
+        } else if (ch === ',' && !inQ) {
+          cells.push(cur.trim()); cur = '';
+        } else {
+          cur += ch;
+        }
+      }
+      cells.push(cur.trim());
+      rows.push(cells);
+    }
+    return rows;
+  }
+
+  // ── DATE PARSER ─────────────────────────────────────────────
+  function parseDate(raw) {
+    if (!raw) return null;
+    const s = raw.trim();
+    // DD/MM/YYYY
+    const dmy = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (dmy) return new Date(parseInt(dmy[3]), parseInt(dmy[2]) - 1, parseInt(dmy[1]));
+    // YYYY-MM-DD fallback
+    const ymd = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (ymd) return new Date(parseInt(ymd[1]), parseInt(ymd[2]) - 1, parseInt(ymd[3]));
+    return null;
+  }
+
+  function formatDate(d) {
+    if (!d) return '';
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  }
+
+  // ── BUILD PAGE ──────────────────────────────────────────────
+  function buildPage(rows) {
+    if (rows.length < 2) {
+      document.getElementById('status').textContent = 'No books found in the spreadsheet.';
+      return;
+    }
+
+    // Row 0 = headers, skip it. Each subsequent row:
+    //   col 0 = "Title, Author" combined
+    //   col 1 = date string DD/MM/YYYY
+    const books = [];
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      const combined = r[0] || '';
+      const dateRaw  = r[1] || '';
+      if (!combined) continue;
+
+      // Split on the LAST comma so titles containing commas stay intact
+      const lastComma = combined.lastIndexOf(',');
+      let title, author;
+      if (lastComma >= 0) {
+        title  = combined.slice(0, lastComma).trim();
+        author = combined.slice(lastComma + 1).trim();
+      } else {
+        title  = combined.trim();
+        author = '';
+      }
+
+      const date = parseDate(dateRaw);
+      const year = date ? date.getFullYear() : 'Unknown';
+
+      books.push({ title, author, date, year });
+    }
+
+    // Group by year, newest first
+    const byYear = {};
+    for (const book of books) {
+      const y = String(book.year);
+      if (!byYear[y]) byYear[y] = [];
+      byYear[y].push(book);
+    }
+
+    const years = Object.keys(byYear).sort((a, b) => {
+      if (a === 'Unknown') return 1;
+      if (b === 'Unknown') return -1;
+      return b - a;
+    });
+
+    // Render
+    const container = document.getElementById('books-container');
+    container.innerHTML = '';
+
+    const totalDiv = document.createElement('div');
+    totalDiv.className = 'book-total';
+    totalDiv.innerHTML = `<strong>${books.length}</strong> books across <strong>${years.length}</strong> year${years.length !== 1 ? 's' : ''}`;
+    container.appendChild(totalDiv);
+
+    years.forEach((year, idx) => {
+      const yearBooks = byYear[year];
+      const block = document.createElement('div');
+      block.className = 'year-block' + (idx === 0 ? ' open' : '');
+
+      const header = document.createElement('div');
+      header.className = 'year-header';
+      header.innerHTML = `
+        <div class="year-header-left">
+          <span class="year-label">${year}</span>
+          <span class="year-count">${yearBooks.length} book${yearBooks.length !== 1 ? 's' : ''}</span>
+        </div>
+        <span class="year-toggle">+</span>
+      `;
+      header.addEventListener('click', () => block.classList.toggle('open'));
+
+      const list = document.createElement('div');
+      list.className = 'book-list';
+
+      for (const book of yearBooks) {
+        const item = document.createElement('div');
+        item.className = 'book-item';
+        item.innerHTML = `
+          <div>
+            <div class="book-title">${book.title}</div>
+            ${book.author ? `<div class="book-author">${book.author}</div>` : ''}
+          </div>
+          ${book.date ? `<div class="book-date">${formatDate(book.date)}</div>` : ''}
+        `;
+        list.appendChild(item);
+      }
+
+      block.appendChild(header);
+      block.appendChild(list);
+      container.appendChild(block);
+    });
+  }
+
+  // ── FETCH & INIT ────────────────────────────────────────────
+  async function init() {
+    try {
+      const res = await fetch(CSV_URL);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      buildPage(parseCSV(text));
+    } catch (err) {
+      const el = document.getElementById('status');
+      if (el) {
+        el.className = 'status-msg error';
+        el.textContent = 'Could not load reading list. Make sure the Google Sheet is published to the web.';
+      }
+      console.error(err);
+    }
+  }
+
+  init();
+  </script>
+
+</body>
+</html>
